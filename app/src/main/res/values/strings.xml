@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">LEAF3</string>
+
+    <string name="covering_no_selection">Select a covering</string>
+    <string name="covering">Covering</string>
+
+    <string-array name="covering_array">
+        <item>Opaque</item>
+        <item>Transparent</item>
+        <item>Standard</item>
+        <item>None</item>
+    </string-array>
+
+    <string name="result">Result</string>
+
+
+
+
 </resources>

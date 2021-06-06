@@ -11,6 +11,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,19 +28,29 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
+import static java.lang.Math.floorDiv;
 import static java.lang.Math.log;
 
-public class MainActivity extends AppCompatActivity implements LocationListener{
+public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
     Location currentLocation = new Location("");
     protected LocationManager locationManager;
     protected LocationListener locationListener;
     protected String latitude,longitude;
+    protected float uvFen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println("HI");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //SPINNER NONSENSE
+        Spinner coveringSpinner = (Spinner) findViewById(R.id.covering_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.covering_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        coveringSpinner.setAdapter(adapter);
+        coveringSpinner.setOnItemSelectedListener(this);
+
         /*
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -53,17 +67,43 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         new MyTask().execute();
     }
 
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
+        parent.getItemAtPosition(pos);
+        switch (pos) {
+            case 1:
+                uvFen = (float) 0.000304508;
+                break;
+            case 2:
+                uvFen = (float) 0.035078273;
+                break;
+            case 3:
+                uvFen = (float) 0.00801709;
+                break;
+            case 4:
+                uvFen = (float) 0.043617209;
+                break;
+
+        }
+    }
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+
+
     @Override
     public void onLocationChanged(Location location) {
         System.out.println("!Latitude:" + location.getLatitude() + ", Longitude:" + location.getLongitude());
         currentLocation = location;
     }
 
-    private class MyTask extends AsyncTask<Void, Void, Void> {
+    private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
 
+        float uvFen;
         String result;
         @Override
         protected Void doInBackground(Void... voids) {
+
             System.out.println("Doing anything?");//apparently not
             String daysOutput = "Days required: "+daysToReachUVDose();
             System.out.println(daysOutput);
@@ -73,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         private int daysToReachUVDose() {
             //Get this to change with dropdown?
-            float uvFen = (float) 0.035078273;
+//            float uvFen = (float) 0.035078273;
             float requiredDegredation = (float) 0.99;
 
             float uvDoseRequired = (float) -(10000*log(1-requiredDegredation))/(9*uvFen);
@@ -99,9 +139,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             float predictedCumulativeHours = (float) 0.0;
             int days = 0;
             while (predictedCumulativeHours < hoursRequired && days < 300){
-                days++;
                 predictedDaylightHours = findDaylightHours(days);
                 predictedCumulativeHours += predictedDaylightHours;
+                days++;
             }
             daysRequired = days;
             return daysRequired;
@@ -174,6 +214,30 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             System.out.println("Done baby!");
             super.onPostExecute(aVoid);
         }
+
+
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
+            parent.getItemAtPosition(pos);
+            switch (pos) {
+                case 1:
+                    uvFen = (float) 0.000304508;
+                    break;
+                case 2:
+                    uvFen = (float) 0.035078273;
+                    break;
+                case 3:
+                    uvFen = (float) 0.00801709;
+                    break;
+                case 4:
+                    uvFen = (float) 0.043617209;
+                    break;
+
+            }
+        }
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+
     }
 
     //Not at all safe but should work.

@@ -11,6 +11,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,19 +28,29 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
+import static java.lang.Math.floorDiv;
 import static java.lang.Math.log;
 
-public class MainActivity extends AppCompatActivity implements LocationListener{
+public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
     Location currentLocation = new Location("");
     protected LocationManager locationManager;
     protected LocationListener locationListener;
     protected String latitude,longitude;
+    protected float uvFen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println("HI");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //SPINNER NONSENSE
+        Spinner coveringSpinner = (Spinner) findViewById(R.id.covering_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.covering_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        coveringSpinner.setAdapter(adapter);
+        coveringSpinner.setOnItemSelectedListener(this);
+
         /*
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -50,9 +64,32 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);*/
-
         new MyTask().execute();
     }
+
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
+        parent.getItemAtPosition(pos);
+        switch (pos) {
+            case 1:
+                uvFen = (float) 0.000304508;
+                break;
+            case 2:
+                uvFen = (float) 0.035078273;
+                break;
+            case 3:
+                uvFen = (float) 0.00801709;
+                break;
+            case 4:
+                uvFen = (float) 0.043617209;
+                break;
+
+        }
+    }
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+
 
     @Override
     public void onLocationChanged(Location location) {
@@ -60,11 +97,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         currentLocation = location;
     }
 
-    private class MyTask extends AsyncTask<Void, Void, Void> {
+    private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
 
+        float uvFen;
         String result;
         @Override
         protected Void doInBackground(Void... voids) {
+
             System.out.println("Doing anything?");//apparently not
             String daysOutput = "Days required: "+daysToReachUVDose();
             System.out.println(daysOutput);
@@ -74,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         private int daysToReachUVDose() {
             //Get this to change with dropdown?
-            float uvFen = (float) 0.043617209;
+//            float uvFen = (float) 0.035078273;
             float requiredDegredation = (float) 0.99;
 
             float uvDoseRequired = (float) -(10000*log(1-requiredDegredation))/(9*uvFen);
@@ -124,11 +163,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 requestDate = java.sql.Date.valueOf(lRequestDate.toString());
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = formatter.format(requestDate);
-                System.out.println("!!!!!"+days);
-                System.out.println("!!!"+dateString);
-                String latitudeString = "55.953251";
-                String longitudeString = "-3.188267";
-                url = new URL("https://api.sunrise-sunset.org/json?lat="+latitudeString+"&lng="+longitudeString+"&date="+dateString);
+                System.out.println(dateString);
+                url = new URL("https://api.sunrise-sunset.org/json?lat=55.953251&lng=-3.188267&date="+dateString);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
                 String stringBuffer;
                 String stringOutput = "";
@@ -178,6 +214,30 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             System.out.println("Done baby!");
             super.onPostExecute(aVoid);
         }
+
+
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
+            parent.getItemAtPosition(pos);
+            switch (pos) {
+                case 1:
+                    uvFen = (float) 0.000304508;
+                    break;
+                case 2:
+                    uvFen = (float) 0.035078273;
+                    break;
+                case 3:
+                    uvFen = (float) 0.00801709;
+                    break;
+                case 4:
+                    uvFen = (float) 0.043617209;
+                    break;
+
+            }
+        }
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+
     }
 
     //Not at all safe but should work.

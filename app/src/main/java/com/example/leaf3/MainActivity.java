@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     protected LocationListener locationListener;
     protected String latitude,longitude;
     protected float uvFen;
+    TextView resultOutput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         coveringSpinner.setAdapter(adapter);
         coveringSpinner.setOnItemSelectedListener(this);
+
+        resultOutput = (TextView) findViewById(R.id.result_output);
 
         /*
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -114,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             } else {
                 daysOutput = "Days required: " + daysToReachUVDose();
             }
+            resultOutput.setText(daysOutput);
             System.out.println(daysOutput);
             System.out.println("Latitude:" + currentLocation.getLatitude() + ", Longitude:" + currentLocation.getLongitude());
             return null;

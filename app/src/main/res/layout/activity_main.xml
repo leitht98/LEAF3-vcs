@@ -31,8 +31,14 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/covering_spinner"
         android:text="@string/result"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:id="@+id/result"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/result"
+        android:id="@+id/result_output"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

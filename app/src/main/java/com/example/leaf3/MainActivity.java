@@ -64,26 +64,29 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);*/
-        new MyTask().execute();
+        //new MyTask().execute();
     }
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
         parent.getItemAtPosition(pos);
-        switch (pos) {
-            case 1:
-                uvFen = (float) 0.000304508;
-                break;
-            case 2:
+        System.out.println("---------------------------------------------------------------------------" + id);
+        switch ((int)id) {
+            case 0: //t
                 uvFen = (float) 0.035078273;
                 break;
-            case 3:
+            case 1: //o
+                uvFen = (float) 0.0003045083;
+                break;
+            case 2: //s
                 uvFen = (float) 0.00801709;
                 break;
-            case 4:
+            case 3: //no film
                 uvFen = (float) 0.043617209;
                 break;
 
         }
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!FEN" +uvFen);
+        new MyTask().execute();
     }
     public void onNothingSelected(AdapterView<?> parent) {
 
@@ -99,13 +102,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
 
-        float uvFen;
+        //float uvFen;
         String result;
         @Override
         protected Void doInBackground(Void... voids) {
 
             System.out.println("Doing anything?");//apparently not
-            String daysOutput = "Days required: "+daysToReachUVDose();
+            String daysOutput = "";
+            if (daysToReachUVDose()>300){
+                daysOutput = "Days required: OVER 300";
+            } else {
+                daysOutput = "Days required: " + daysToReachUVDose();
+            }
             System.out.println(daysOutput);
             System.out.println("Latitude:" + currentLocation.getLatitude() + ", Longitude:" + currentLocation.getLongitude());
             return null;
@@ -138,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             float predictedDaylightHours = (float) 0.0;
             float predictedCumulativeHours = (float) 0.0;
             int days = 0;
-            while (predictedCumulativeHours < hoursRequired && days < 300){
+            while (predictedCumulativeHours < hoursRequired && days < 301){
                 predictedDaylightHours = findDaylightHours(days);
                 predictedCumulativeHours += predictedDaylightHours;
                 days++;
@@ -164,7 +172,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = formatter.format(requestDate);
                 System.out.println(dateString);
-                url = new URL("https://api.sunrise-sunset.org/json?lat=55.953251&lng=-3.188267&date="+dateString);
+                System.out.println("!!!!!!!!!!------"+uvFen);
+                String latString = "55.953251";
+                String longString = "-3.188267";
+                url = new URL("https://api.sunrise-sunset.org/json?lat="+latString+"&lng="+longString+"&date="+dateString);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
                 String stringBuffer;
                 String stringOutput = "";
@@ -220,10 +231,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             parent.getItemAtPosition(pos);
             switch (pos) {
                 case 1:
-                    uvFen = (float) 0.000304508;
+                    uvFen = (float) 0.035078273;
                     break;
                 case 2:
-                    uvFen = (float) 0.035078273;
+                    uvFen = (float) 0.000304508;
                     break;
                 case 3:
                     uvFen = (float) 0.00801709;

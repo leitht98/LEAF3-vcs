@@ -5,8 +5,8 @@
     <string name="covering">Covering</string>
 
     <string-array name="covering_array">
-        <item>Opaque</item>
         <item>Transparent</item>
+        <item>Opaque</item>
         <item>Standard</item>
         <item>None</item>
     </string-array>

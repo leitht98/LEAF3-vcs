@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);*/
+
         new MyTask().execute();
     }
 
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         private int daysToReachUVDose() {
             //Get this to change with dropdown?
-            float uvFen = (float) 0.035078273;
+            float uvFen = (float) 0.043617209;
             float requiredDegredation = (float) 0.99;
 
             float uvDoseRequired = (float) -(10000*log(1-requiredDegredation))/(9*uvFen);
@@ -99,9 +100,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             float predictedCumulativeHours = (float) 0.0;
             int days = 0;
             while (predictedCumulativeHours < hoursRequired && days < 300){
-                days++;
                 predictedDaylightHours = findDaylightHours(days);
                 predictedCumulativeHours += predictedDaylightHours;
+                days++;
             }
             daysRequired = days;
             return daysRequired;
@@ -123,8 +124,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 requestDate = java.sql.Date.valueOf(lRequestDate.toString());
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = formatter.format(requestDate);
-                System.out.println(dateString);
-                url = new URL("https://api.sunrise-sunset.org/json?lat=55.953251&lng=-3.188267&date="+dateString);
+                System.out.println("!!!!!"+days);
+                System.out.println("!!!"+dateString);
+                String latitudeString = "55.953251";
+                String longitudeString = "-3.188267";
+                url = new URL("https://api.sunrise-sunset.org/json?lat="+latitudeString+"&lng="+longitudeString+"&date="+dateString);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
                 String stringBuffer;
                 String stringOutput = "";

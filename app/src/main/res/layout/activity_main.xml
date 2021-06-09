@@ -54,5 +54,19 @@
         android:text="Longitude will be here! "
         app:layout_constraintTop_toBottomOf="@+id/latTextView"/>
 
+    <EditText
+        android:id="@+id/enterDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="09/06/2021"
+        app:layout_constraintTop_toBottomOf="@+id/lonTextView"/>
+
+    <Button
+        android:id="@+id/goButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Go!"
+        app:layout_constraintTop_toBottomOf="@+id/enterDate"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

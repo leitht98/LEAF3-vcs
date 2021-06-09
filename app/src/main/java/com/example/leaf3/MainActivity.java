@@ -19,6 +19,8 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     TextView latitudeTextView, longitTextView;
     int PERMISSION_ID = 44;
+    EditText enterDate;
+    Button goButton;
+
 
 
 
@@ -75,6 +80,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         latitudeTextView = findViewById(R.id.latTextView);
         longitTextView = findViewById(R.id.lonTextView);
+
+        enterDate = findViewById(R.id.enterDate);
+        goButton = findViewById(R.id.goButton);
+
+        ProjectDAO dao = new ProjectDAO();
+
+        goButton.setOnClickListener(v->{
+            System.out.println("GO???");
+            Project prj = new Project(enterDate.getText().toString());
+            dao.add(prj).addOnSuccessListener(suc -> {
+                Toast.makeText(this,"Date recorded",Toast.LENGTH_SHORT).show();
+            }).addOnFailureListener(er -> {
+                Toast.makeText(this,""+er.getMessage(),Toast.LENGTH_SHORT).show();
+            });
+        });
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 

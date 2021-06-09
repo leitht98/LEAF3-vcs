@@ -40,5 +40,19 @@
         app:layout_constraintTop_toBottomOf="@+id/result"
         android:id="@+id/result_output"/>
 
+    <TextView
+        android:id="@+id/latTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/result_output"
+        android:text="Latitude will be here! "/>
+
+    <TextView
+        android:id="@+id/lonTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Longitude will be here! "
+        app:layout_constraintTop_toBottomOf="@+id/latTextView"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

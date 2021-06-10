@@ -50,24 +50,22 @@ import static java.lang.Math.log;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
     Location currentLocation = new Location("");
-    protected LocationManager locationManager;
-    protected LocationListener locationListener;
     protected String latitude,longitude;
     protected float uvFen;
     TextView resultOutput;
     FusedLocationProviderClient mFusedLocationClient;
 
-    TextView latitudeTextView, longitTextView;
+    TextView latitudeTextView, longitudeTextView;
     int PERMISSION_ID = 44;
     EditText enterDate;
     Button goButton;
+    float uvRate = (float) 1;
 
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //System.out.println("HI");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -79,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         coveringSpinner.setOnItemSelectedListener(this);
 
         latitudeTextView = findViewById(R.id.latTextView);
-        longitTextView = findViewById(R.id.lonTextView);
+        longitudeTextView = findViewById(R.id.lonTextView);
 
         enterDate = findViewById(R.id.enterDate);
         goButton = findViewById(R.id.goButton);
@@ -90,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             System.out.println("GO???");
             Project prj = new Project(enterDate.getText().toString());
             dao.add(prj).addOnSuccessListener(suc -> {
+                System.out.println("Step 3");
                 Toast.makeText(this,"Date recorded",Toast.LENGTH_SHORT).show();
             }).addOnFailureListener(er -> {
                 Toast.makeText(this,""+er.getMessage(),Toast.LENGTH_SHORT).show();
@@ -101,21 +100,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         resultOutput = (TextView) findViewById(R.id.result_output);
 
         getLastLocation();
-
-        /*
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);*/
-        //new MyTask().execute();
     }
 
     //https://www.geeksforgeeks.org/how-to-get-user-location-in-android/
@@ -139,12 +123,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         if (location == null) {
                             requestNewLocationData();
                         } else {
-                            latitudeTextView.setText(location.getLatitude() + "");
-                            longitTextView.setText(location.getLongitude() + "");
-                            //System.out.println("~~~~~~~~~~~~Lat:"+location.getLatitude() + "");
-                            //System.out.println("~~~~~~~~~~~~Long:"+location.getLongitude() + "");
                             latitude = location.getLatitude()+"";
                             longitude = location.getLongitude()+"";
+                            latitudeTextView.setText(latitude);
+                            longitudeTextView.setText(longitude);
                         }
                     }
                 });
@@ -183,22 +165,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         public void onLocationResult(LocationResult locationResult) {
             Location mLastLocation = locationResult.getLastLocation();
             latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
-            longitTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
-            //System.out.println("~~~~~~~Lat:"+mLastLocation.getLatitude() + "");
-            //System.out.println("~~~~~~~Long:"+mLastLocation.getLongitude() + "");
-            //latitude = mLastLocation.getLatitude()+"";
-            //longitude = mLastLocation.getLongitude()+"";
+            longitudeTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
         }
     };
 
     // method to check for permissions
     private boolean checkPermissions() {
         return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-
-        // If we want background location
-        // on Android 10.0 and higher,
-        // use:
-        // ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
     // method to request for permissions
@@ -238,23 +211,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
         parent.getItemAtPosition(pos);
-        //System.out.println("---------------------------------------------------------------------------" + id);
         switch ((int)id) {
             case 0: //t
                 uvFen = (float) 0.035078273;
+                uvRate = (float) 46.48309932;
                 break;
             case 1: //o
                 uvFen = (float) 0.0003045083;
+                uvRate = (float) 2.707452846;
                 break;
             case 2: //s
                 uvFen = (float) 0.00801709;
+                uvRate = (float) 26.48524698;
                 break;
             case 3: //no film
                 uvFen = (float) 0.043617209;
+                uvRate = (float) 55.94852496;
                 break;
 
         }
-        //System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!FEN" +uvFen);
         new MyTask().execute();
     }
     public void onNothingSelected(AdapterView<?> parent) {
@@ -265,18 +240,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
-        //System.out.println("!Latitude:" + location.getLatitude() + ", Longitude:" + location.getLongitude());
         currentLocation = location;
     }
 
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
 
-        //float uvFen;
         String result;
         @Override
         protected Void doInBackground(Void... voids) {
-
-            //System.out.println("Doing anything?");
             String daysOutput = "";
             if (daysToReachUVDose()>300){
                 daysOutput = "Days required: OVER 300";
@@ -284,21 +255,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 daysOutput = "Days required: " + daysToReachUVDose();
             }
             resultOutput.setText(daysOutput);
-            System.out.println(daysOutput);
-            //System.out.println("Latitude:" + currentLocation.getLatitude() + ", Longitude:" + currentLocation.getLongitude());
-            //System.out.println("!Latitude:" + latitude + ", !Longitude:" + longitude);
+            //System.out.println(daysOutput);
             return null;
         }
 
         private int daysToReachUVDose() {
-            //Get this to change with dropdown?
-//            float uvFen = (float) 0.035078273;
             float requiredDegredation = (float) 0.99;
 
             float uvDoseRequired = (float) -(10000*log(1-requiredDegredation))/(9*uvFen);
                     
             int daysRequired = 0;
-            float uvRate = 1;
+            //Okay, got it working but now it changes the predictions to be way lower??
+            //Okay. shit. maybe this never worked and that's why changing it fixed it?
+            /*
             if(uvFen == 0.000304508){
                 uvRate = (float) 2.707452846;
             }
@@ -310,10 +279,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             }
             else if (uvFen == 0.043617209) {
                 uvRate = (float) 55.94852496;
-            }
+            }*/
+            //System.out.println(uvRate);
             float secondsRequired = uvDoseRequired/uvRate;
             float hoursRequired = secondsRequired/60/60;
 
+            //Will use this later when removing daylight hours for each day
             float predictedDaylightHours = (float) 0.0;
             float predictedCumulativeHours = (float) 0.0;
             int days = 0;
@@ -329,26 +300,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         private float findDaylightHours(int days){
             URL url;
             try {
-                //start with basic string then add date
-                //Change so you can set a date, not just today
                 Date requestDate = new Date();
                 LocalDate lRequestDate = requestDate.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
-                //System.out.println(lRequestDate);
-                //Get this to change with a parameter
                 lRequestDate = lRequestDate.plusDays(days);
-                //System.out.println(lRequestDate);
                 requestDate = java.sql.Date.valueOf(lRequestDate.toString());
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = formatter.format(requestDate);
-                //System.out.println(dateString);
-                //System.out.println("!!!!!!!!!!------"+uvFen);
-                String latString = "0";
-                String longString = "0";
-                //System.out.println("########################"+latitude+longitude);
-                //System.out.println("### "+"https://api.sunrise-sunset.org/json?lat="+latString+"&lng="+longString+"&date="+dateString);
-                //System.out.println("# "+"https://api.sunrise-sunset.org/json?lat="+latitude+"&lng="+longitude+"&date="+dateString);
                 url = new URL("https://api.sunrise-sunset.org/json?lat="+latitude+"&lng="+longitude+"&date="+dateString);
                 System.out.println(url);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -366,12 +325,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             try {
                 JSONObject obj = new JSONObject(result);
                 String dayLength = obj.getJSONObject("results").getString("day_length");
-                //System.out.println(dayLength);
-                //Convert to int
                 float dayLengthInHours = dayLengthToHours(dayLength);
                 System.out.println(dayLengthInHours);
+                System.out.println(uvRate);
                 return dayLengthInHours;
-                //delegate.processFinish(result);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -382,40 +339,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         @Override
         protected void onPostExecute(Void aVoid) {
-
-            //System.out.println(result);
-            /*
-            try {
-                JSONObject obj = new JSONObject(result);
-                String dayLength = obj.getJSONObject("results").getString("day_length");
-                //System.out.println(dayLength);
-                //Convert to int
-                float dayLengthInHours = dayLengthToHours(dayLength);
-                System.out.println(dayLengthInHours);
-                //delegate.processFinish(result);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            super.onPostExecute(aVoid);*/
-            System.out.println("Done baby!");
             super.onPostExecute(aVoid);
         }
-
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
             parent.getItemAtPosition(pos);
             switch (pos) {
-                case 1:
+                case 0: //t
                     uvFen = (float) 0.035078273;
+                    uvRate = (float) 46.48309932;
                     break;
-                case 2:
-                    uvFen = (float) 0.000304508;
+                case 1: //o
+                    uvFen = (float) 0.0003045083;
+                    uvRate = (float) 2.707452846;
                     break;
-                case 3:
+                case 2: //s
                     uvFen = (float) 0.00801709;
+                    uvRate = (float) 26.48524698;
                     break;
-                case 4:
+                case 3: //no film
                     uvFen = (float) 0.043617209;
+                    uvRate = (float) 55.94852496;
                     break;
 
             }
@@ -431,23 +375,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         float totalHours = 0;
         char h1 = dayLength.charAt(0);
         char h2 = dayLength.charAt(1);
-        String dayLightHours = String.valueOf(h1) + String.valueOf(h2);
-        //System.out.println("H:"+dayLightHours);
+        String dayLightHours = h1 + String.valueOf(h2);
         totalHours += Float.parseFloat(dayLightHours);
         //System.out.println(totalHours);
         char m1 = dayLength.charAt(3);
         char m2 = dayLength.charAt(4);
-        String dayLightMinutes = String.valueOf(m1) + String.valueOf(m2);
-        //System.out.println("M:"+dayLightMinutes);
-        //float minutesToHours =
+        String dayLightMinutes = m1 + String.valueOf(m2);
         totalHours += Float.parseFloat(dayLightMinutes)/60;
-        //System.out.println(totalHours);
         char s1 = dayLength.charAt(6);
         char s2 = dayLength.charAt(7);
-        String dayLightSeconds = String.valueOf(s1) + String.valueOf(s2);
-        //System.out.println("S:"+dayLightSeconds);
+        String dayLightSeconds = s1 + String.valueOf(s2);
         totalHours += Float.parseFloat(dayLightSeconds)/60/60;
-        //System.out.println(totalHours);
 
         return totalHours;
     }

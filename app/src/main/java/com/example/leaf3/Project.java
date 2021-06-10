@@ -5,6 +5,7 @@ public class Project {
     public Project(){}
 
     public Project(String date) {
+        System.out.println("Step 1");
         this.date = date;
     }
 

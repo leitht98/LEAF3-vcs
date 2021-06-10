@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         @Override
         protected Void doInBackground(Void... voids) {
+            goButton.setText("Calculating...");
             String daysOutput = "";
             if (daysToReachUVDose()>300){
                 daysOutput = "Days required: OVER 300";
@@ -432,6 +433,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            goButton.setText("GO!");
 
             Map<String, Object> user = new HashMap<>();
 

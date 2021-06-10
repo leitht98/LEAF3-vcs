@@ -10,26 +10,47 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/covering"
         android:gravity="center"
-        app:layout_constraintBottom_toTopOf="@id/covering_spinner" />
+        android:text="@string/covering"
+        app:layout_constraintBottom_toTopOf="@id/covering_spinner"
+        tools:layout_editor_absoluteX="0dp"
+        android:id="@+id/covering_label"/>
 
     <Spinner
         android:id="@+id/covering_spinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="325dp"
+        android:layout_marginTop="100dp"
         android:background="@android:drawable/btn_dropdown"
         android:spinnerMode="dropdown"
         android:tooltipText="@string/covering_no_selection"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/covering_label"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/pesticide_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pesticide"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/covering_spinner"/>
+
+    <Spinner
+        android:id="@+id/pesticide_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        android:tooltipText="Select a pesticide"
+        app:layout_constraintTop_toBottomOf="@id/pesticide_label" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/covering_spinner"
+        app:layout_constraintTop_toBottomOf="@id/pesticide_spinner"
         android:text="@string/result"
         android:gravity="center"
         android:id="@+id/result"/>
@@ -54,19 +75,47 @@
         android:text="Longitude will be here! "
         app:layout_constraintTop_toBottomOf="@+id/latTextView"/>
 
-    <EditText
-        android:id="@+id/enterDate"
+    <TextView
+        android:id="@+id/enterStartQuantityLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="09/06/2021"
+        android:text="Enter the start quantity of the pesticide (mg/m2):"
         app:layout_constraintTop_toBottomOf="@+id/lonTextView"/>
+
+    <EditText
+        android:id="@+id/enterStartQuantity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="50"
+        app:layout_constraintTop_toBottomOf="@+id/enterStartQuantityLabel"/>
+
+    <TextView
+        android:id="@+id/enterDegradationLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter the percentage you want it to degrade by:"
+        app:layout_constraintTop_toBottomOf="@+id/enterStartQuantity"/>
+
+    <EditText
+        android:id="@+id/enterDegradation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="99"
+        app:layout_constraintTop_toBottomOf="@+id/enterDegradationLabel"/>
 
     <Button
         android:id="@+id/goButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Go!"
-        app:layout_constraintTop_toBottomOf="@+id/enterDate"/>
+        app:layout_constraintTop_toBottomOf="@+id/enterDegradation"/>
+
+    <Button
+        android:id="@+id/databaseButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Access database"
+        app:layout_constraintTop_toBottomOf="@+id/goButton"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,12 +8,14 @@
         <item>Transparent</item>
         <item>Opaque</item>
         <item>Standard</item>
-        <item>None</item>
+        <item>No film</item>
+    </string-array>
+
+    <string-array name="pesticides_array">
+        <item>Fenitrothion</item>
     </string-array>
 
     <string name="result">Result</string>
-
-
 
 
 </resources>

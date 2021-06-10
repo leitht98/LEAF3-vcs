@@ -16,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,7 +32,13 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +50,11 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.log;
@@ -57,42 +68,84 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     TextView latitudeTextView, longitudeTextView;
     int PERMISSION_ID = 44;
-    EditText enterDate;
-    Button goButton;
+    EditText enterDegradation, enterStartQuantity;
+    Button goButton, databaseButton;
     float uvRate = (float) 1;
-
-
-
+    String coveringType = "Transparent";
+    String pesticideType = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //SPINNER NONSENSE
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         Spinner coveringSpinner = (Spinner) findViewById(R.id.covering_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.covering_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         coveringSpinner.setAdapter(adapter);
         coveringSpinner.setOnItemSelectedListener(this);
 
+        Spinner pesticideSpinner = (Spinner) findViewById(R.id.pesticide_spinner);
+        ArrayAdapter<CharSequence> pAdapter = ArrayAdapter.createFromResource(this, R.array.pesticides_array, android.R.layout.simple_spinner_item);
+        pAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        pesticideSpinner.setAdapter(pAdapter);
+        pesticideSpinner.setOnItemSelectedListener(this);
+
         latitudeTextView = findViewById(R.id.latTextView);
         longitudeTextView = findViewById(R.id.lonTextView);
 
-        enterDate = findViewById(R.id.enterDate);
+        enterDegradation = findViewById(R.id.enterDegradation);
+        enterStartQuantity = findViewById(R.id.enterStartQuantity);
         goButton = findViewById(R.id.goButton);
+        databaseButton = findViewById(R.id.databaseButton);
 
-        ProjectDAO dao = new ProjectDAO();
+        int daysRequired = 0;
 
         goButton.setOnClickListener(v->{
-            System.out.println("GO???");
-            Project prj = new Project(enterDate.getText().toString());
-            dao.add(prj).addOnSuccessListener(suc -> {
-                System.out.println("Step 3");
-                Toast.makeText(this,"Date recorded",Toast.LENGTH_SHORT).show();
-            }).addOnFailureListener(er -> {
-                Toast.makeText(this,""+er.getMessage(),Toast.LENGTH_SHORT).show();
-            });
+            new MyTask().execute();
+
+            /*
+            Map<String, Object> user = new HashMap<>();
+
+            user.put("covering", coveringType);
+            user.put("degradation", enterDegradation.getText().toString());
+            user.put("latitude", latitude);
+            user.put("longitude", longitude);
+            user.put("pesticide", pesticideType);
+            Date c = Calendar.getInstance().getTime();
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String formattedDate = df.format(c);
+            user.put("start_date", formattedDate);
+            //in mg/m2
+            user.put("start_quantity", enterStartQuantity.getText().toString());
+            user.put("uv_fen", uvFen);
+
+            user.put("days_needed", resultOutput.getText().toString().substring(15));
+
+            saveProject(db, user);*/
+        });
+
+        databaseButton.setOnClickListener(v->{
+            String TAG = "test";
+            db.collection("projects")
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            String dataString = "";
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d(TAG, document.getId() + " => " + document.getData());
+                                    dataString += document.getData();
+                                }
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
+                            openNewActivity(dataString);
+                        }
+                    });
         });
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -100,6 +153,31 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         resultOutput = (TextView) findViewById(R.id.result_output);
 
         getLastLocation();
+    }
+
+    public void openNewActivity(String dataString){
+        Intent intent = new Intent(this, DataLog.class);
+        intent.putExtra("data_string", dataString);
+        startActivity(intent);
+    }
+
+
+    private void saveProject(FirebaseFirestore db, Map<String, Object> user){
+        String TAG = "test";
+        db.collection("projects")
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
     }
 
     //https://www.geeksforgeeks.org/how-to-get-user-location-in-android/
@@ -210,27 +288,43 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
-        parent.getItemAtPosition(pos);
-        switch ((int)id) {
-            case 0: //t
-                uvFen = (float) 0.035078273;
-                uvRate = (float) 46.48309932;
+        switch (parent.getId()) {
+            case R.id.covering_spinner:
+                parent.getItemAtPosition(pos);
+                switch ((int) id) {
+                    case 0: //Transparent
+                        uvFen = (float) 0.035078273;
+                        uvRate = (float) 46.48309932;
+                        coveringType = "Transparent";
+                        break;
+                    case 1: //Opaque
+                        uvFen = (float) 0.0003045083;
+                        uvRate = (float) 2.707452846;
+                        coveringType = "Opaque";
+                        break;
+                    case 2: //Standard
+                        uvFen = (float) 0.00801709;
+                        uvRate = (float) 26.48524698;
+                        coveringType = "Standard";
+                        break;
+                    case 3: //No film
+                        uvFen = (float) 0.043617209;
+                        uvRate = (float) 55.94852496;
+                        coveringType = "No film";
+                        break;
+                }
                 break;
-            case 1: //o
-                uvFen = (float) 0.0003045083;
-                uvRate = (float) 2.707452846;
+            case R.id.pesticide_spinner:
+                parent.getItemAtPosition(pos);
+                switch ((int) id) {
+                    case 0:
+                        pesticideType = "Fenitrothion";
+                        break;
+                }
                 break;
-            case 2: //s
-                uvFen = (float) 0.00801709;
-                uvRate = (float) 26.48524698;
-                break;
-            case 3: //no film
-                uvFen = (float) 0.043617209;
-                uvRate = (float) 55.94852496;
-                break;
-
         }
-        new MyTask().execute();
+        //Move to run after button click??
+        //new MyTask().execute();
     }
     public void onNothingSelected(AdapterView<?> parent) {
 
@@ -244,8 +338,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
-
         String result;
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         @Override
         protected Void doInBackground(Void... voids) {
             String daysOutput = "";
@@ -260,13 +355,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
 
         private int daysToReachUVDose() {
-            float requiredDegredation = (float) 0.99;
+            float requiredDegradation = (float) Float.parseFloat(enterDegradation.getText().toString())/100;
 
-            float uvDoseRequired = (float) -(10000*log(1-requiredDegredation))/(9*uvFen);
+
+            float uvDoseRequired = (float) -(10000*log(1-requiredDegradation))/(9*uvFen);
                     
             int daysRequired = 0;
-            //Okay, got it working but now it changes the predictions to be way lower??
-            //Okay. shit. maybe this never worked and that's why changing it fixed it?
+            //Old version, didn't actually change uvRate, so it was always 1, massively increasing days required
             /*
             if(uvFen == 0.000304508){
                 uvRate = (float) 2.707452846;
@@ -309,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = formatter.format(requestDate);
                 url = new URL("https://api.sunrise-sunset.org/json?lat="+latitude+"&lng="+longitude+"&date="+dateString);
-                System.out.println(url);
+                //System.out.println(url);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
                 String stringBuffer;
                 String stringOutput = "";
@@ -326,8 +421,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 JSONObject obj = new JSONObject(result);
                 String dayLength = obj.getJSONObject("results").getString("day_length");
                 float dayLengthInHours = dayLengthToHours(dayLength);
-                System.out.println(dayLengthInHours);
-                System.out.println(uvRate);
+                //System.out.println(dayLengthInHours);
                 return dayLengthInHours;
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -335,39 +429,71 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             return (float) 0.0;
         }
 
-
-
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+
+            Map<String, Object> user = new HashMap<>();
+
+            user.put("covering", coveringType);
+            user.put("degradation", enterDegradation.getText().toString());
+            user.put("latitude", latitude);
+            user.put("longitude", longitude);
+            user.put("pesticide", pesticideType);
+            Date c = Calendar.getInstance().getTime();
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String formattedDate = df.format(c);
+            user.put("start_date", formattedDate);
+            //in mg/m2
+            user.put("start_quantity", enterStartQuantity.getText().toString());
+            user.put("uv_fen", uvFen);
+
+            user.put("days_needed", resultOutput.getText().toString().substring(15));
+
+            saveProject(db, user);
         }
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
-            parent.getItemAtPosition(pos);
-            switch (pos) {
-                case 0: //t
-                    uvFen = (float) 0.035078273;
-                    uvRate = (float) 46.48309932;
+            switch (parent.getId()) {
+                case R.id.covering_spinner:
+                    parent.getItemAtPosition(pos);
+                    switch ((int) id) {
+                        case 0: //Transparent
+                            uvFen = (float) 0.035078273;
+                            uvRate = (float) 46.48309932;
+                            coveringType = "Transparent";
+                            break;
+                        case 1: //Opaque
+                            uvFen = (float) 0.0003045083;
+                            uvRate = (float) 2.707452846;
+                            coveringType = "Opaque";
+                            break;
+                        case 2: //Standard
+                            uvFen = (float) 0.00801709;
+                            uvRate = (float) 26.48524698;
+                            coveringType = "Standard";
+                            break;
+                        case 3: //No film
+                            uvFen = (float) 0.043617209;
+                            uvRate = (float) 55.94852496;
+                            coveringType = "No film";
+                            break;
+                    }
                     break;
-                case 1: //o
-                    uvFen = (float) 0.0003045083;
-                    uvRate = (float) 2.707452846;
+                case R.id.pesticide_spinner:
+                    parent.getItemAtPosition(pos);
+                    switch ((int) id) {
+                        case 0:
+                            pesticideType = "Fenitrothion";
+                            break;
+                    }
                     break;
-                case 2: //s
-                    uvFen = (float) 0.00801709;
-                    uvRate = (float) 26.48524698;
-                    break;
-                case 3: //no film
-                    uvFen = (float) 0.043617209;
-                    uvRate = (float) 55.94852496;
-                    break;
-
             }
         }
+
         public void onNothingSelected(AdapterView<?> parent) {
 
         }
-
     }
 
     //Not at all safe but should work.
@@ -377,7 +503,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         char h2 = dayLength.charAt(1);
         String dayLightHours = h1 + String.valueOf(h2);
         totalHours += Float.parseFloat(dayLightHours);
-        //System.out.println(totalHours);
         char m1 = dayLength.charAt(3);
         char m2 = dayLength.charAt(4);
         String dayLightMinutes = m1 + String.valueOf(m2);
@@ -389,6 +514,4 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         return totalHours;
     }
-
-
 }

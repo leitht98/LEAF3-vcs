@@ -56,7 +56,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static java.lang.Math.floorDiv;
 import static java.lang.Math.log;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
@@ -137,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                             String dataString = "";
                             if (task.isSuccessful()) {
                                 for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(TAG, document.getId() + " => " + document.getData());
+                                    //Log.d(TAG, document.getId() + " => " + document.getData());
                                     dataString += document.getData();
                                 }
                             } else {
@@ -203,8 +202,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         } else {
                             latitude = location.getLatitude()+"";
                             longitude = location.getLongitude()+"";
-                            latitudeTextView.setText(latitude);
-                            longitudeTextView.setText(longitude);
+                            latitudeTextView.setText("Latitude: "+latitude);
+                            longitudeTextView.setText("Longitude: "+longitude);
                         }
                     }
                 });
@@ -362,20 +361,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             float uvDoseRequired = (float) -(10000*log(1-requiredDegradation))/(9*uvFen);
                     
             int daysRequired = 0;
-            //Old version, didn't actually change uvRate, so it was always 1, massively increasing days required
-            /*
-            if(uvFen == 0.000304508){
-                uvRate = (float) 2.707452846;
-            }
-            else if (uvFen == 0.035078273){
-                uvRate = (float) 46.48309932;
-            }
-            else if (uvFen == 0.00801709){
-                uvRate = (float) 26.48524698;
-            }
-            else if (uvFen == 0.043617209) {
-                uvRate = (float) 55.94852496;
-            }*/
             //System.out.println(uvRate);
             float secondsRequired = uvDoseRequired/uvRate;
             float hoursRequired = secondsRequired/60/60;

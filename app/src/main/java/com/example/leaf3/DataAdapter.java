@@ -47,7 +47,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
 
-        // Get element from your dataset at this position and replace the
+        // Get element from dataset at this position and replace the
         // contents of the view with that element
         viewHolder.getTextView().setText(localDataSet[position]);
     }

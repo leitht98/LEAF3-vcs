@@ -46,7 +46,6 @@ public class DataLog extends AppCompatActivity {
         //make a layout manager and add it
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         projectDataList.setLayoutManager(layoutManager);
-        //make it sexy
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(projectDataList.getContext(), layoutManager.getOrientation());
         projectDataList.addItemDecoration(dividerItemDecoration);
 

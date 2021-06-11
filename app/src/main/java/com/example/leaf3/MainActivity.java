@@ -104,26 +104,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         goButton.setOnClickListener(v->{
             new MyTask().execute();
-
-            /*
-            Map<String, Object> user = new HashMap<>();
-
-            user.put("covering", coveringType);
-            user.put("degradation", enterDegradation.getText().toString());
-            user.put("latitude", latitude);
-            user.put("longitude", longitude);
-            user.put("pesticide", pesticideType);
-            Date c = Calendar.getInstance().getTime();
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            String formattedDate = df.format(c);
-            user.put("start_date", formattedDate);
-            //in mg/m2
-            user.put("start_quantity", enterStartQuantity.getText().toString());
-            user.put("uv_fen", uvFen);
-
-            user.put("days_needed", resultOutput.getText().toString().substring(15));
-
-            saveProject(db, user);*/
         });
 
         databaseButton.setOnClickListener(v->{
@@ -322,8 +302,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 }
                 break;
         }
-        //Move to run after button click??
-        //new MyTask().execute();
     }
     public void onNothingSelected(AdapterView<?> parent) {
 

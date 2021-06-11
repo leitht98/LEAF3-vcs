@@ -34,6 +34,8 @@ public class DataLog extends AppCompatActivity {
             //adds new lines
             dataArray[i] = dataArray[i].replace(", ", "\n");
             //removes dead space
+            dataArray[i] = dataArray[i].replace("=", " = ");
+            dataArray[i] = dataArray[i].replace("_", " ");
             dataArray[i] = dataArray[i].trim();
         }
 

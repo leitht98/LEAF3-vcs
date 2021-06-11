@@ -62,13 +62,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     Location currentLocation = new Location("");
     protected String latitude,longitude;
     protected float uvFen;
-    TextView resultOutput;
-    FusedLocationProviderClient mFusedLocationClient;
+    private TextView resultOutput;
+    private FusedLocationProviderClient mFusedLocationClient;
 
-    TextView latitudeTextView, longitudeTextView;
+    private TextView latitudeTextView, longitudeTextView;
     int PERMISSION_ID = 44;
-    EditText enterDegradation, enterStartQuantity;
-    Button goButton, databaseButton;
+    private EditText enterDegradation, enterStartQuantity;
+    private Button goButton, databaseButton;
     float uvRate = (float) 1;
     String coveringType = "Transparent";
     String pesticideType = "";
@@ -99,8 +99,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         enterStartQuantity = findViewById(R.id.enterStartQuantity);
         goButton = findViewById(R.id.goButton);
         databaseButton = findViewById(R.id.databaseButton);
-
-        int daysRequired = 0;
 
         goButton.setOnClickListener(v->{
             new MyTask().execute();
@@ -159,8 +157,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 });
     }
 
+    //Copied from:
     //https://www.geeksforgeeks.org/how-to-get-user-location-in-android/
-    //Very much copied
     @SuppressLint("MissingPermission")
     private void getLastLocation() {
         // check if permissions are given
@@ -265,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             getLastLocation();
         }
     }
+    //End of copied section
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
         switch (parent.getId()) {
@@ -296,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             case R.id.pesticide_spinner:
                 parent.getItemAtPosition(pos);
                 switch ((int) id) {
-                    case 0:
+                    case 0: //Fenitrothion
                         pesticideType = "Fenitrothion";
                         break;
                 }
@@ -306,8 +305,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     public void onNothingSelected(AdapterView<?> parent) {
 
     }
-
-
 
     @Override
     public void onLocationChanged(Location location) {
@@ -339,7 +336,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             float uvDoseRequired = (float) -(10000*log(1-requiredDegradation))/(9*uvFen);
                     
             int daysRequired = 0;
-            //System.out.println(uvRate);
             float secondsRequired = uvDoseRequired/uvRate;
             float hoursRequired = secondsRequired/60/60;
 
@@ -412,7 +408,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             //in mg/m2
             user.put("start_quantity", enterStartQuantity.getText().toString());
             user.put("uv_fen", uvFen);
-
             user.put("days_needed", resultOutput.getText().toString().substring(15));
 
             saveProject(db, user);
@@ -448,7 +443,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 case R.id.pesticide_spinner:
                     parent.getItemAtPosition(pos);
                     switch ((int) id) {
-                        case 0:
+                        case 0: //Fenitrothion
                             pesticideType = "Fenitrothion";
                             break;
                     }

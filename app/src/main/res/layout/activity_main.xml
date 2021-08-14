@@ -20,7 +20,7 @@
         android:id="@+id/covering_spinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="30dp"
         android:background="@android:drawable/btn_dropdown"
         android:spinnerMode="dropdown"
         android:tooltipText="@string/covering_no_selection"
@@ -61,6 +61,7 @@
         app:layout_constraintTop_toBottomOf="@+id/result"
         android:id="@+id/result_output"/>
 
+    <!--
     <TextView
         android:id="@+id/latTextView"
         android:layout_width="match_parent"
@@ -75,12 +76,14 @@
         android:text="Longitude will be here! "
         app:layout_constraintTop_toBottomOf="@+id/latTextView"/>
 
+    -->
+
     <TextView
         android:id="@+id/enterStartQuantityLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Enter the start quantity of the pesticide (mg/m2):"
-        app:layout_constraintTop_toBottomOf="@+id/lonTextView"/>
+        app:layout_constraintTop_toBottomOf="@+id/result_output"/>
 
     <EditText
         android:id="@+id/enterStartQuantity"
@@ -100,15 +103,57 @@
         android:id="@+id/enterDegradation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="99"
+        android:text="1"
         app:layout_constraintTop_toBottomOf="@+id/enterDegradationLabel"/>
+
+    <TextView
+        android:id="@+id/enterGrowTempLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter the temperature you're growing at in degrees C:"
+        app:layout_constraintTop_toBottomOf="@+id/enterDegradation"/>
+
+    <EditText
+        android:id="@+id/enterGrowTemp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="20"
+        app:layout_constraintTop_toBottomOf="@+id/enterGrowTempLabel"/>
+
+    <TextView
+        android:id="@+id/enterHoursLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter the number of hours at this temperature:"
+        app:layout_constraintTop_toBottomOf="@+id/enterGrowTemp"/>
+
+    <EditText
+        android:id="@+id/enterHours"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="36"
+        app:layout_constraintTop_toBottomOf="@+id/enterHoursLabel"/>
+
+    <TextView
+        android:id="@+id/enterUVDoseLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter the given UV dose:"
+        app:layout_constraintTop_toBottomOf="@+id/enterHours"/>
+
+    <EditText
+        android:id="@+id/enterUVDose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="350885.8888"
+        app:layout_constraintTop_toBottomOf="@+id/enterUVDoseLabel"/>
 
     <Button
         android:id="@+id/goButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Go!"
-        app:layout_constraintTop_toBottomOf="@+id/enterDegradation"/>
+        app:layout_constraintTop_toBottomOf="@+id/enterUVDose"/>
 
     <Button
         android:id="@+id/databaseButton"

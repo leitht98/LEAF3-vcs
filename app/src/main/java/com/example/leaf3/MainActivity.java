@@ -56,7 +56,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static java.lang.Math.E;
 import static java.lang.Math.log;
+import static java.lang.Math.pow;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
     Location currentLocation = new Location("");
@@ -65,9 +67,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private TextView resultOutput;
     private FusedLocationProviderClient mFusedLocationClient;
 
-    private TextView latitudeTextView, longitudeTextView;
+    //private TextView latitudeTextView, longitudeTextView;
     int PERMISSION_ID = 44;
-    private EditText enterDegradation, enterStartQuantity;
+    private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
     private Button goButton, databaseButton;
     float uvRate = (float) 1;
     String coveringType = "Transparent";
@@ -92,11 +94,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         pesticideSpinner.setAdapter(pAdapter);
         pesticideSpinner.setOnItemSelectedListener(this);
 
-        latitudeTextView = findViewById(R.id.latTextView);
-        longitudeTextView = findViewById(R.id.lonTextView);
+        //latitudeTextView = findViewById(R.id.latTextView);
+        //longitudeTextView = findViewById(R.id.lonTextView);
 
         enterDegradation = findViewById(R.id.enterDegradation);
         enterStartQuantity = findViewById(R.id.enterStartQuantity);
+        enterGrowTemp = findViewById(R.id.enterGrowTemp);
+        enterHours = findViewById(R.id.enterHours);
+        enterUVDose = findViewById(R.id.enterUVDose);
         goButton = findViewById(R.id.goButton);
         databaseButton = findViewById(R.id.databaseButton);
 
@@ -180,8 +185,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         } else {
                             latitude = location.getLatitude()+"";
                             longitude = location.getLongitude()+"";
-                            latitudeTextView.setText("Latitude: "+latitude);
-                            longitudeTextView.setText("Longitude: "+longitude);
+                            //latitudeTextView.setText("Latitude: "+latitude);
+                            //longitudeTextView.setText("Longitude: "+longitude);
                         }
                     }
                 });
@@ -219,8 +224,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         @Override
         public void onLocationResult(LocationResult locationResult) {
             Location mLastLocation = locationResult.getLastLocation();
-            latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
-            longitudeTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
+            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
+            //longitudeTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
         }
     };
 
@@ -326,8 +331,46 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             }
             resultOutput.setText(daysOutput);
             //System.out.println(daysOutput);
+            //System.out.println("Volatilisation Rate: " + volatilisationRate() + " ug/m2/hr");
             return null;
         }
+
+        private float volatilisationRate(int growingTemp){
+            //Assumption, maybe allow user to input? Are greenhouses temperature controlled?
+            //int growingTemp = 20;
+            float tempInKelvin = growingTemp + (float) 273.15;
+            float regressionParam1 = 0;
+            float regressionParam2 = 0;
+            if(pesticideType == "Fenitrothion"){
+                regressionParam1 = (float) 6.3362;
+                regressionParam2 = (float) 3197.8;
+            }
+            float vapourPressure = (float) Math.pow(10,(regressionParam1 - (regressionParam2/tempInKelvin)));
+            float vapourPressure1mmHg = (float) vapourPressure * (float) 133.322;
+            float lnVP = (float) log(vapourPressure1mmHg);
+            float volatilisationRatePerHour = (float) Math.pow(E,(11.81+(0.85956*lnVP)));
+            return volatilisationRatePerHour;
+        }
+
+        private float remainingPesticideTemp(float startConcentration, float hours, int growingTemp){
+            return startConcentration - (hours * volatilisationRate(growingTemp))/1000;
+        }
+
+        private float remainingPesticideUV(float startConcentration, float givenUVDose){
+            //float uvDoseRequired = (float) -(10000*log(1-requiredDegradation))/(9*uvFen);
+            //fractionPhotodegraded = 1-(1*EXP(-0.0009*(U9*AB16)))
+            //U9 = UVfen, find how?
+            //AB16 = H9*60*60*36
+            //H9 = UVDose per second I think
+            //This is broken.
+            float fractionPhotodegraded = (float) ((float) 1-(1*log(-0.0009*(uvFen * givenUVDose))));
+            fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
+            //System.out.println("Fraction: "+fractionPhotodegraded);
+            float endConcentration = startConcentration - (fractionPhotodegraded*startConcentration);
+            //System.out.println("Concentration left: "+endConcentration);
+            return endConcentration;
+        }
+
 
         private int daysToReachUVDose() {
             float requiredDegradation = (float) Float.parseFloat(enterDegradation.getText().toString())/100;
@@ -394,6 +437,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             super.onPostExecute(aVoid);
             goButton.setText("GO!");
 
+            //Example from excel sheet
+            //Okay, this works but remember it's using UVFen, not just a UV dose.
+            //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
+            //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
+            //Maybe the sensors could calculate UVFen and feed that into the app too?
+            float testRemainingAfterUV = remainingPesticideUV(Float.parseFloat(enterStartQuantity.getText().toString()),Float.parseFloat(enterUVDose.getText().toString()));
+            //System.out.println("!!! --> " + testRemainingAfterUV);
+            float testRemainingAfterTemp = remainingPesticideTemp(Float.parseFloat(enterStartQuantity.getText().toString()),Float.parseFloat(enterHours.getText().toString()), Integer.parseInt(enterGrowTemp.getText().toString()));
+
             Map<String, Object> user = new HashMap<>();
 
             user.put("covering", coveringType);
@@ -407,11 +459,28 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             user.put("start_date", formattedDate);
             //in mg/m2
             user.put("start_quantity", enterStartQuantity.getText().toString());
+            user.put("grow_temp", enterGrowTemp.getText().toString());
+            //To be updated, running total
+            user.put("grow_hours", enterHours.getText().toString());
+            user.put("uv_dose", enterUVDose.getText().toString());
+            //To be updated each time new data is added
+            user.put("current_quantity_uv", testRemainingAfterUV);
+            user.put("current_quantity_temp", testRemainingAfterTemp);
+            //Guesses as to how to combine the two breakdown rates:
+            user.put("current_quantity_best_one", Math.min(testRemainingAfterUV,testRemainingAfterTemp));
+            user.put("current_quantity_worst_one",Math.max(testRemainingAfterUV,testRemainingAfterTemp));
+            user.put("current_quantity_mid_point",(testRemainingAfterUV+testRemainingAfterTemp)/2);
+            user.put("current_quantity_combined_breakdown",testRemainingAfterUV-(Float.parseFloat(enterStartQuantity.getText().toString())-testRemainingAfterTemp));
+            user.put("current_quantity_uv_then_temp",remainingPesticideTemp(testRemainingAfterUV,Float.parseFloat(enterHours.getText().toString()), Integer.parseInt(enterGrowTemp.getText().toString())));
+            user.put("current_quantity_temp_then_uv",remainingPesticideUV(testRemainingAfterTemp,Float.parseFloat(enterUVDose.getText().toString())));
+
             user.put("uv_fen", uvFen);
             user.put("days_needed", resultOutput.getText().toString().substring(15));
 
             saveProject(db, user);
         }
+
+
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
             switch (parent.getId()) {

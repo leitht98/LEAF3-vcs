@@ -59,9 +59,18 @@ public class DataLog extends AppCompatActivity {
             //System.out.println(dataArray[i]);
             //System.out.println(projectID);
         }
-
+        String[] trimArray = new String[dataArray.length-1];
+        int iter = 0;
+        for(String s:dataArray){
+            //System.out.println(">>>"+s);
+            if(!s.equals("")){
+                //System.out.println("--->>>"+s);
+                trimArray[iter] = s;
+                iter++;
+            }
+        }
         //get a new instance of a very basic custom adapter (taken from the google tutorials, mostly)
-        DataAdapter dataAdapter = new DataAdapter(dataArray);
+        DataAdapter dataAdapter = new DataAdapter(trimArray);
         //add the adapter to the list thing
         projectDataList.setAdapter(dataAdapter);
         //make a layout manager and add it

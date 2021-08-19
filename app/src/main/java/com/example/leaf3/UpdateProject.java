@@ -183,6 +183,7 @@ public class UpdateProject extends AppCompatActivity {
         //Add a "last updated" date thing. Also, no harm int adding the time, helps to identify the different projects
         //Maybe need a unique ID? Might make editing files in the database easier
 
+        /*
         //To be updated, running total
         System.out.println("grow_hours"+ (growHours + Float.parseFloat(enterHours.getText().toString())));
         System.out.println("uv_dose"+ (uvDose + Float.parseFloat(enterUVDose.getText().toString())));
@@ -204,7 +205,7 @@ public class UpdateProject extends AppCompatActivity {
         System.out.println("current_quantity_combined_breakdown"+Math.max(0,remainingPesticideUV(currentQuantityCombinedBreakdown,Float.parseFloat(enterUVDose.getText().toString()))-(currentQuantityCombinedBreakdown-remainingPesticideTemp(currentQuantityCombinedBreakdown,Float.parseFloat(enterHours.getText().toString()), growTemp))));
         System.out.println("current_quantity_uv_then_temp"+Math.max(0,remainingPesticideTemp(remainingPesticideUV(currentQuantityUVThenTemp,Float.parseFloat(enterUVDose.getText().toString())),Float.parseFloat(enterHours.getText().toString()), growTemp)));
         System.out.println("current_quantity_temp_then_uv"+Math.max(0,remainingPesticideUV(remainingPesticideTemp(currentQuantityTempThenUV,Float.parseFloat(enterHours.getText().toString()), growTemp),Float.parseFloat(enterUVDose.getText().toString()))));
-
+        */
         //String testDocumentID = "9ouCIT5TYcN3KmizEjLu";
         Map<String, Object> user = new HashMap<>();
 

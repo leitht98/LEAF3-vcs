@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,6 +35,11 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
                     //System.out.println("Hiya " + textView.getText());
                     openNewActivity((String) textView.getText(),view);
                 });
+
+                Button deleteButton = (Button) view.findViewById(R.id.deleteButton);
+                deleteButton.setOnClickListener(v -> {
+                    openDeleteActivity((String) textView.getText(),view);
+                });
             }
         }
 
@@ -54,6 +61,13 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             context.startActivity(i);*/
 
+        }
+
+        public void openDeleteActivity(String dataString, View view){
+            Context context = view.getContext();
+            Intent intent = new Intent(context, DeleteProject.class);
+            intent.putExtra("data",dataString);
+            context.startActivity(intent);
         }
     }
 

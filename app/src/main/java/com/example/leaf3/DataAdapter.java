@@ -22,10 +22,13 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
             textView = (TextView) view.findViewById(R.id.textView);
             //This didn't get rid of the mystery button but oh well.
             //The other buttons are printing out the right stuff
-            //So now just need it to launch a new activity which allows you to add new data and update the database
-            //Piece of piss
-            if(textView.getText()!=null) {
+            //System.out.println("---->"+textView.getText());
+            if(textView.getText().equals("")) {
+                //System.out.println(">>>>"+textView.getText());
                 Button projectButton = (Button) view.findViewById(R.id.projectButton);
+                //System.out.println("2>>>>"+textView.getText());
+                //I don't know why textViews's text changes after this bit
+                //Where does it get changed to the data?
                 projectButton.setOnClickListener(v -> {
                     //System.out.println("Hiya " + textView.getText());
                     openNewActivity((String) textView.getText(),view);
@@ -43,6 +46,14 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
             Intent intent = new Intent(context, UpdateProject.class);
             intent.putExtra("data",dataString);
             context.startActivity(intent);
+            //How do I get it to kick you back further?
+            //this.finish();
+            //Okay, this works but is kicking me back when I click on the project, not when I update it.
+            /*
+            Intent i=new Intent(context, MainActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(i);*/
+
         }
     }
 
@@ -74,7 +85,10 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
 
         // Get element from dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.getTextView().setText(localDataSet[position]);
+        //System.out.println("!!!!>>> "+localDataSet[position]);
+        if(!localDataSet[position].equals("")) {
+            viewHolder.getTextView().setText(localDataSet[position]);
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)

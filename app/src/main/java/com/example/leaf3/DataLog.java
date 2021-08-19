@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
+import java.util.Arrays;
+
 public class DataLog extends AppCompatActivity {
     Button backButton;
     String dataString;
@@ -28,7 +30,24 @@ public class DataLog extends AppCompatActivity {
         Intent intent = getIntent();
         dataString = intent.getStringExtra("data_string");
         String[] dataArray = dataString.split("\\{");
+
         for (int i=0; i<dataArray.length; i++){
+            //System.out.println(i+">>> "+dataArray[i]);
+            String[] tempArray = dataArray[i].split(", ");
+            Arrays.sort(tempArray);
+            String tempString = "";
+            for(int j=0; j<tempArray.length; j++){
+                //System.out.println(">"+tempArray[j]);
+                if(j<tempArray.length-1) {
+                    tempString += tempArray[j] + ", ";
+                } else{
+                    //System.out.println("~~~~~~~~~~");
+                    tempString += tempArray[j];
+                }
+            }
+            //System.out.println("--->>> "+ tempString);
+            dataArray[i] = tempString;
+            //String projectID = dataArray[i].substring(dataArray[i].length()-20);
             //gets rid of a trailing bracket (used the other to split it)
             dataArray[i] = dataArray[i].replace("}", "");
             //adds new lines
@@ -37,6 +56,8 @@ public class DataLog extends AppCompatActivity {
             dataArray[i] = dataArray[i].replace("=", " = ");
             dataArray[i] = dataArray[i].replace("_", " ");
             dataArray[i] = dataArray[i].trim();
+            //System.out.println(dataArray[i]);
+            //System.out.println(projectID);
         }
 
         //get a new instance of a very basic custom adapter (taken from the google tutorials, mostly)

@@ -119,12 +119,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                             String dataString = "";
                             if (task.isSuccessful()) {
                                 for (QueryDocumentSnapshot document : task.getResult()) {
-                                    //Log.d(TAG, document.getId() + " => " + document.getData());
+                                    //System.out.println("----->"+document.getId());
+
                                     dataString += document.getData();
+                                    dataString += ", id="+document.getId();
                                 }
                             } else {
                                 Log.w(TAG, "Error getting documents.", task.getException());
                             }
+                            //System.out.println("!!??!!"+dataString+"!!??!!");
                             openNewActivity(dataString);
                         }
                     });
@@ -324,18 +327,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         protected Void doInBackground(Void... voids) {
             goButton.setText("Calculating...");
             String daysOutput = "";
-            if (daysToReachUVDose()>300){
+            if (daysToReachUVDose() > 300) {
                 daysOutput = "Days required: OVER 300";
             } else {
                 daysOutput = "Days required: " + daysToReachUVDose();
             }
             resultOutput.setText(daysOutput);
             //System.out.println(daysOutput);
-            //System.out.println("Volatilisation Rate: " + volatilisationRate() + " ug/m2/hr");
+            //System.out.println("Volatilisation Rate: " + volatilisationRate(20) + " ug/m2/hr");
             return null;
         }
 
-        private float volatilisationRate(int growingTemp){
+        private float volatilisationRate(float growingTemp){
             //Assumption, maybe allow user to input? Are greenhouses temperature controlled?
             //int growingTemp = 20;
             float tempInKelvin = growingTemp + (float) 273.15;
@@ -352,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             return volatilisationRatePerHour;
         }
 
-        private float remainingPesticideTemp(float startConcentration, float hours, int growingTemp){
+        private float remainingPesticideTemp(float startConcentration, float hours, float growingTemp){
             return startConcentration - (hours * volatilisationRate(growingTemp))/1000;
         }
 
@@ -363,8 +366,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             //AB16 = H9*60*60*36
             //H9 = UVDose per second I think
             //This is broken.
-            float fractionPhotodegraded = (float) ((float) 1-(1*log(-0.0009*(uvFen * givenUVDose))));
-            fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
+            float fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
             //System.out.println("Fraction: "+fractionPhotodegraded);
             float endConcentration = startConcentration - (fractionPhotodegraded*startConcentration);
             //System.out.println("Concentration left: "+endConcentration);
@@ -373,20 +375,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
 
         private int daysToReachUVDose() {
-            float requiredDegradation = (float) Float.parseFloat(enterDegradation.getText().toString())/100;
 
+            float requiredDegradation = (float) Float.parseFloat(enterDegradation.getText().toString()) / 100;
 
-            float uvDoseRequired = (float) -(10000*log(1-requiredDegradation))/(9*uvFen);
-                    
+            float uvDoseRequired = (float) -(10000 * log(1 - requiredDegradation)) / (9 * uvFen);
+
             int daysRequired = 0;
-            float secondsRequired = uvDoseRequired/uvRate;
-            float hoursRequired = secondsRequired/60/60;
+            float secondsRequired = uvDoseRequired / uvRate;
+            float hoursRequired = secondsRequired / 60 / 60;
 
             //Will use this later when removing daylight hours for each day
             float predictedDaylightHours = (float) 0.0;
             float predictedCumulativeHours = (float) 0.0;
             int days = 0;
-            while (predictedCumulativeHours < hoursRequired && days < 301){
+            while (predictedCumulativeHours < hoursRequired && days < 301) {
                 predictedDaylightHours = findDaylightHours(days);
                 predictedCumulativeHours += predictedDaylightHours;
                 days++;
@@ -437,47 +439,70 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             super.onPostExecute(aVoid);
             goButton.setText("GO!");
 
-            //Example from excel sheet
-            //Okay, this works but remember it's using UVFen, not just a UV dose.
-            //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
-            //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
-            //Maybe the sensors could calculate UVFen and feed that into the app too?
-            float testRemainingAfterUV = remainingPesticideUV(Float.parseFloat(enterStartQuantity.getText().toString()),Float.parseFloat(enterUVDose.getText().toString()));
-            //System.out.println("!!! --> " + testRemainingAfterUV);
-            float testRemainingAfterTemp = remainingPesticideTemp(Float.parseFloat(enterStartQuantity.getText().toString()),Float.parseFloat(enterHours.getText().toString()), Integer.parseInt(enterGrowTemp.getText().toString()));
+            try {
+                //Example from excel sheet
+                //Okay, this works but remember it's using UVFen, not just a UV dose.
+                //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
+                //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
+                //Maybe the sensors could calculate UVFen and feed that into the app too?
+                float testRemainingAfterUV = remainingPesticideUV(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()));
+                //System.out.println("!!! --> " + testRemainingAfterUV);
+                float testRemainingAfterTemp = remainingPesticideTemp(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()));
 
-            Map<String, Object> user = new HashMap<>();
+                Map<String, Object> user = new HashMap<>();
 
-            user.put("covering", coveringType);
-            user.put("degradation", enterDegradation.getText().toString());
-            user.put("latitude", latitude);
-            user.put("longitude", longitude);
-            user.put("pesticide", pesticideType);
-            Date c = Calendar.getInstance().getTime();
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            String formattedDate = df.format(c);
-            user.put("start_date", formattedDate);
-            //in mg/m2
-            user.put("start_quantity", enterStartQuantity.getText().toString());
-            user.put("grow_temp", enterGrowTemp.getText().toString());
-            //To be updated, running total
-            user.put("grow_hours", enterHours.getText().toString());
-            user.put("uv_dose", enterUVDose.getText().toString());
-            //To be updated each time new data is added
-            user.put("current_quantity_uv", testRemainingAfterUV);
-            user.put("current_quantity_temp", testRemainingAfterTemp);
-            //Guesses as to how to combine the two breakdown rates:
-            user.put("current_quantity_best_one", Math.min(testRemainingAfterUV,testRemainingAfterTemp));
-            user.put("current_quantity_worst_one",Math.max(testRemainingAfterUV,testRemainingAfterTemp));
-            user.put("current_quantity_mid_point",(testRemainingAfterUV+testRemainingAfterTemp)/2);
-            user.put("current_quantity_combined_breakdown",testRemainingAfterUV-(Float.parseFloat(enterStartQuantity.getText().toString())-testRemainingAfterTemp));
-            user.put("current_quantity_uv_then_temp",remainingPesticideTemp(testRemainingAfterUV,Float.parseFloat(enterHours.getText().toString()), Integer.parseInt(enterGrowTemp.getText().toString())));
-            user.put("current_quantity_temp_then_uv",remainingPesticideUV(testRemainingAfterTemp,Float.parseFloat(enterUVDose.getText().toString())));
+                user.put("covering", coveringType);
+                user.put("degradation_required", enterDegradation.getText().toString());
+                user.put("latitude", latitude);
+                user.put("longitude", longitude);
+                user.put("pesticide", pesticideType);
+                Date c = Calendar.getInstance().getTime();
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                String formattedDate = df.format(c);
+                user.put("start_date", formattedDate);
+                //Add a "last updated" date thing. Also, no harm int adding the time, helps to identify the different projects
+                //Maybe need a unique ID? Might make editing files in the database easier
+                //in mg/m2
+                user.put("start_quantity", enterStartQuantity.getText().toString());
+                user.put("grow_temp", enterGrowTemp.getText().toString());
+                //To be updated, running total
+                user.put("grow_hours", enterHours.getText().toString());
+                user.put("uv_dose", enterUVDose.getText().toString());
+                //To be updated each time new data is added
+                user.put("current_quantity_uv", Math.max(0, testRemainingAfterUV));
+                user.put("current_quantity_temp", Math.max(0, testRemainingAfterTemp));
+                //Guesses as to how to combine the two breakdown rates:
+                user.put("current_quantity_best_one", Math.max(0, Math.min(testRemainingAfterUV, testRemainingAfterTemp)));
+                user.put("current_quantity_worst_one", Math.max(0, Math.max(testRemainingAfterUV, testRemainingAfterTemp)));
+                user.put("current_quantity_mid_point", Math.max(0, (testRemainingAfterUV + testRemainingAfterTemp) / 2));
+                user.put("current_quantity_combined_breakdown", Math.max(0, testRemainingAfterUV - (Float.parseFloat(enterStartQuantity.getText().toString()) - testRemainingAfterTemp)));
+                user.put("current_quantity_uv_then_temp", Math.max(0, remainingPesticideTemp(testRemainingAfterUV, Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()))));
+                user.put("current_quantity_temp_then_uv", Math.max(0, remainingPesticideUV(testRemainingAfterTemp, Float.parseFloat(enterUVDose.getText().toString()))));
 
-            user.put("uv_fen", uvFen);
-            user.put("days_needed", resultOutput.getText().toString().substring(15));
+                user.put("uv_fen", uvFen);
+                //Based only on UV breakdown, not temperature yet
+                user.put("days_needed", resultOutput.getText().toString().substring(15));
+                Toast.makeText(MainActivity.this, "Calculation Finished.\n"+resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
 
-            saveProject(db, user);
+                saveProject(db, user);
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            super.onPreExecute();  //<-DO I HAVE TO?
+            try {
+                Float.parseFloat(enterDegradation.getText().toString());
+            } catch (Exception e){
+                Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
+                cancel(true);
+            }
+
+            //My onPreExecute code below
+
         }
 
 

@@ -44,14 +44,9 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
-import static java.lang.Math.E;
 import static java.lang.Math.log;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
@@ -100,8 +95,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         goButton.setOnClickListener(v->{
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-            if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
+                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
                 new MyTask().execute();
             }
             else {
@@ -111,8 +106,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         databaseButton.setOnClickListener(v->{
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-            if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
+                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
                 db.collection("projects")
                         .get()
                         .addOnCompleteListener(task -> {
@@ -143,13 +138,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         Intent intent = new Intent(this, DataLog.class);
         intent.putExtra("data_string", dataString);
         startActivity(intent);
-    }
-
-
-    private void saveProject(FirebaseFirestore db, Map<String, Object> user){
-        db.collection("projects")
-                .add(user)
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Failed to save project, please try again.", Toast.LENGTH_SHORT).show());
     }
 
     //Copied from:
@@ -225,8 +213,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     // If everything is alright then
     @Override
-    public void
-    onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == PERMISSION_ID) {
@@ -255,12 +242,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @SuppressLint("StaticFieldLeak")
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
         String result;
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         @SuppressLint("SetTextI18n")
         @Override
         protected Void doInBackground(Void... voids) {
             goButton.setText("Calculating...");
+            resultOutput.setText("");
             String daysOutput;
             if (daysToReachUVDose() > 300) {
                 daysOutput = "Days required: OVER 300";
@@ -270,24 +257,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             resultOutput.setText(daysOutput);
             return null;
         }
-
-        private float volatilisationRate(float growingTemp){
-            float tempInKelvin = growingTemp + (float) 273.15;
-            float vapourPressure = (float) Math.pow(10,(regressionParam1 - (regressionParam2/tempInKelvin)));
-            float vapourPressure1mmHg = (float) vapourPressure * (float) 133.322;
-            float lnVP = (float) log(vapourPressure1mmHg);
-            return (float) Math.pow(E,(11.81+(0.85956*lnVP)));
-        }
-
-        private float remainingPesticideTemp(float startConcentration, float hours, float growingTemp){
-            return startConcentration - (hours * volatilisationRate(growingTemp))/1000;
-        }
-
-        private float remainingPesticideUV(float startConcentration, float givenUVDose){
-            float fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
-            return startConcentration - (fractionPhotodegraded*startConcentration);
-        }
-
 
         private int daysToReachUVDose() {
 
@@ -352,54 +321,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 //Okay, this works but remember it's using UVFen, not just a UV dose.
                 //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
                 //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
-                //Maybe the sensors could calculate UVFen and feed that into the app too?
-                float testRemainingAfterUV = remainingPesticideUV(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()));
-                float testRemainingAfterTemp = remainingPesticideTemp(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()));
+                Project project = new Project();
 
-                Map<String, Object> user = new HashMap<>();
-
-                user.put("covering", coveringType);
-                user.put("degradation_required", enterDegradation.getText().toString());
-                user.put("latitude", latitude);
-                user.put("longitude", longitude);
-                user.put("pesticide", pesticideType);
-
-                Date c = Calendar.getInstance().getTime();
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                String formattedDate = df.format(c);
-                user.put("start_date", formattedDate);
-
-                //Add a "last updated" date thing. Also, no harm int adding the time, helps to identify the different projects
-                //Maybe need a unique ID? Might make editing files in the database easier
-                //in mg/m2
-                user.put("start_quantity", enterStartQuantity.getText().toString());
-                user.put("grow_temp", enterGrowTemp.getText().toString());
-
-                //To be updated, running total
-                user.put("grow_hours", enterHours.getText().toString());
-                user.put("uv_dose", enterUVDose.getText().toString());
-
-                //To be updated each time new data is added
-                user.put("current_quantity_uv", Math.max(0, testRemainingAfterUV));
-                user.put("current_quantity_temp", Math.max(0, testRemainingAfterTemp));
-
-                //Guesses as to how to combine the two breakdown rates:
-                user.put("current_quantity_best_one", Math.max(0, Math.min(testRemainingAfterUV, testRemainingAfterTemp)));
-                user.put("current_quantity_worst_one", Math.max(0, Math.max(testRemainingAfterUV, testRemainingAfterTemp)));
-                user.put("current_quantity_mid_point", Math.max(0, (testRemainingAfterUV + testRemainingAfterTemp) / 2));
-                user.put("current_quantity_combined_breakdown", Math.max(0, testRemainingAfterUV - (Float.parseFloat(enterStartQuantity.getText().toString()) - testRemainingAfterTemp)));
-                user.put("current_quantity_uv_then_temp", Math.max(0, remainingPesticideTemp(testRemainingAfterUV, Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()))));
-                user.put("current_quantity_temp_then_uv", Math.max(0, remainingPesticideUV(testRemainingAfterTemp, Float.parseFloat(enterUVDose.getText().toString()))));
-
-                user.put("uv_fen", uvFen);
-
-                //Based only on UV breakdown, not temperature yet
-                user.put("days_needed", resultOutput.getText().toString().substring(15));
-
-
+                project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()),Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
                 Toast.makeText(MainActivity.this, "Calculation Finished.\n"+resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
-
-                saveProject(db, user);
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
             }
@@ -458,6 +383,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         uvRate = (float) 55.94852496;
                         coveringType = "No film";
                         break;
+                    default:
+                        Toast.makeText(MainActivity.this, "Error fetching covering type.", Toast.LENGTH_SHORT).show();
+                        break;
                 }
                 break;
             case R.id.pesticide_spinner:
@@ -467,6 +395,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         pesticideType = "Fenitrothion";
                         regressionParam1 = (float) 6.3362;
                         regressionParam2 = (float) 3197.8;
+                        break;
+                    default:
+                        Toast.makeText(MainActivity.this, "Error fetching pesticide.", Toast.LENGTH_SHORT).show();
                         break;
                 }
                 break;

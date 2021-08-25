@@ -30,15 +30,15 @@ public class DataLog extends AppCompatActivity {
         for (int i=0; i<dataArray.length; i++){
             String[] tempArray = dataArray[i].split(", ");
             Arrays.sort(tempArray);
-            String tempString = "";
+            StringBuilder tempString = new StringBuilder();
             for(int j=0; j<tempArray.length; j++){
                 if(j<tempArray.length-1) {
-                    tempString += tempArray[j] + ", ";
+                    tempString.append(tempArray[j]).append(", ");
                 } else{
-                    tempString += tempArray[j];
+                    tempString.append(tempArray[j]);
                 }
             }
-            dataArray[i] = tempString;
+            dataArray[i] = tempString.toString();
             dataArray[i] = dataArray[i].replace("}", "");
             dataArray[i] = dataArray[i].replace(", ", "\n");
             dataArray[i] = dataArray[i].replace("=", " = ");
@@ -46,11 +46,11 @@ public class DataLog extends AppCompatActivity {
             dataArray[i] = dataArray[i].trim();
         }
         String[] trimArray = new String[dataArray.length-1];
-        int iter = 0;
+        int iterator = 0;
         for(String s:dataArray){
             if(!s.equals("")){
-                trimArray[iter] = s;
-                iter++;
+                trimArray[iterator] = s;
+                iterator++;
             }
         }
         //get a new instance of a very basic custom adapter (taken from the google tutorials, mostly)

@@ -30,13 +30,9 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,6 +49,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.lang.Math.E;
 import static java.lang.Math.log;
@@ -67,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     //private TextView latitudeTextView, longitudeTextView;
     int PERMISSION_ID = 44;
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
-    private Button goButton, databaseButton;
+    private Button goButton;
     float uvRate = (float) 1;
     String coveringType, pesticideType;
 
@@ -99,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         enterHours = findViewById(R.id.enterHours);
         enterUVDose = findViewById(R.id.enterUVDose);
         goButton = findViewById(R.id.goButton);
-        databaseButton = findViewById(R.id.databaseButton);
+        Button databaseButton = findViewById(R.id.databaseButton);
 
         goButton.setOnClickListener(v->{
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -118,19 +115,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
                 db.collection("projects")
                         .get()
-                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                String dataString = "";
-                                if (task.isSuccessful()) {
-                                    for (QueryDocumentSnapshot document : task.getResult()) {
-                                        dataString += document.getData();
-                                        dataString += ", id=" + document.getId();
-                                    }
-                                    openNewActivity(dataString);
-                                } else {
-                                    Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+                        .addOnCompleteListener(task -> {
+                            StringBuilder dataString = new StringBuilder();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                    dataString.append(document.getData());
+                                    dataString.append(", id=").append(document.getId());
                                 }
+                                openNewActivity(dataString.toString());
+                            } else {
+                                Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
                             }
                         });
             } else{
@@ -168,22 +162,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             // check if location is enabled
             if (isLocationEnabled()) {
 
-                // getting last
-                // location from
-                // FusedLocationClient
-                // object
-                mFusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        Location location = task.getResult();
-                        if (location == null) {
-                            requestNewLocationData();
-                        } else {
-                            latitude = location.getLatitude()+"";
-                            longitude = location.getLongitude()+"";
-                            //latitudeTextView.setText("Latitude: "+latitude);
-                            //longitudeTextView.setText("Longitude: "+longitude);
-                        }
+                mFusedLocationClient.getLastLocation().addOnCompleteListener(task -> {
+                    Location location = task.getResult();
+                    if (location == null) {
+                        requestNewLocationData();
+                    } else {
+                        latitude = location.getLatitude()+"";
+                        longitude = location.getLongitude()+"";
+                        //latitudeTextView.setText("Latitude: "+latitude);
+                        //longitudeTextView.setText("Longitude: "+longitude);
                     }
                 });
             } else {
@@ -215,15 +202,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
 
-    private LocationCallback mLocationCallback = new LocationCallback() {
-
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location mLastLocation = locationResult.getLastLocation();
-            //latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude() + "");
-            //longitudeTextView.setText("Longitude: " + mLastLocation.getLongitude() + "");
-        }
-    };
+    private final LocationCallback mLocationCallback = new LocationCallback() {};
 
     // method to check for permissions
     private boolean checkPermissions() {
@@ -273,10 +252,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     public void onLocationChanged(Location location) {currentLocation = location;}
 
+    @SuppressLint("StaticFieldLeak")
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
         String result;
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+        @SuppressLint("SetTextI18n")
         @Override
         protected Void doInBackground(Void... voids) {
             goButton.setText("Calculating...");
@@ -295,8 +276,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             float vapourPressure = (float) Math.pow(10,(regressionParam1 - (regressionParam2/tempInKelvin)));
             float vapourPressure1mmHg = (float) vapourPressure * (float) 133.322;
             float lnVP = (float) log(vapourPressure1mmHg);
-            float volatilisationRatePerHour = (float) Math.pow(E,(11.81+(0.85956*lnVP)));
-            return volatilisationRatePerHour;
+            return (float) Math.pow(E,(11.81+(0.85956*lnVP)));
         }
 
         private float remainingPesticideTemp(float startConcentration, float hours, float growingTemp){
@@ -305,8 +285,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         private float remainingPesticideUV(float startConcentration, float givenUVDose){
             float fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
-            float endConcentration = startConcentration - (fractionPhotodegraded*startConcentration);
-            return endConcentration;
+            return startConcentration - (fractionPhotodegraded*startConcentration);
         }
 
 
@@ -316,17 +295,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
             float uvDoseRequired = (float) -(10000 * log(1 - requiredDegradation)) / (9 * uvFen);
 
-            int daysRequired = 0;
+            int daysRequired;
             float secondsRequired = uvDoseRequired / uvRate;
             float hoursRequired = secondsRequired / 60 / 60;
-
-            //Will use this later when removing daylight hours for each day
-            float predictedDaylightHours = (float) 0.0;
             float predictedCumulativeHours = (float) 0.0;
             int days = 0;
             while (predictedCumulativeHours < hoursRequired && days < 301) {
-                predictedDaylightHours = findDaylightHours(days);
-                predictedCumulativeHours += predictedDaylightHours;
+                predictedCumulativeHours += findDaylightHours(days);
                 days++;
             }
             daysRequired = days;
@@ -342,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         .toLocalDate();
                 lRequestDate = lRequestDate.plusDays(days);
                 requestDate = java.sql.Date.valueOf(lRequestDate.toString());
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = formatter.format(requestDate);
                 url = new URL("https://api.sunrise-sunset.org/json?lat="+latitude+"&lng="+longitude+"&date="+dateString);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -360,14 +335,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             try {
                 JSONObject obj = new JSONObject(result);
                 String dayLength = obj.getJSONObject("results").getString("day_length");
-                float dayLengthInHours = dayLengthToHours(dayLength);
-                return dayLengthInHours;
+                return dayLengthToHours(dayLength);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             return (float) 0.0;
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -457,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         return totalHours;
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void spinnerSwitch(AdapterView<?> parent, int pos, long id){
         switch (parent.getId()) {
             case R.id.covering_spinner:

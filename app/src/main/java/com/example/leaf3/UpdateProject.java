@@ -191,8 +191,7 @@ public class UpdateProject extends AppCompatActivity {
 
     private float remainingPesticideUV(float startConcentration, float givenUVDose){
         float fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
-        float endConcentration = startConcentration - (fractionPhotodegraded*startConcentration);
-        return endConcentration;
+        return startConcentration - (fractionPhotodegraded*startConcentration);
     }
 
     private float volatilisationRate(float growingTemp){
@@ -206,7 +205,6 @@ public class UpdateProject extends AppCompatActivity {
         float vapourPressure = (float) Math.pow(10,(regressionParam1 - (regressionParam2/tempInKelvin)));
         float vapourPressure1mmHg = (float) vapourPressure * (float) 133.322;
         float lnVP = (float) log(vapourPressure1mmHg);
-        float volatilisationRatePerHour = (float) Math.pow(E,(11.81+(0.85956*lnVP)));
-        return volatilisationRatePerHour;
+        return (float) Math.pow(E,(11.81+(0.85956*lnVP)));
     }
 }

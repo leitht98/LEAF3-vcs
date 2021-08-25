@@ -12,11 +12,12 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -32,10 +33,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -58,12 +56,11 @@ import java.util.Map;
 
 import static java.lang.Math.E;
 import static java.lang.Math.log;
-import static java.lang.Math.pow;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
     Location currentLocation = new Location("");
     protected String latitude,longitude;
-    protected float uvFen;
+    protected float uvFen, regressionParam1, regressionParam2;
     private TextView resultOutput;
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -72,8 +69,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
     private Button goButton, databaseButton;
     float uvRate = (float) 1;
-    String coveringType = "Transparent";
-    String pesticideType = "";
+    String coveringType, pesticideType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,31 +102,40 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         databaseButton = findViewById(R.id.databaseButton);
 
         goButton.setOnClickListener(v->{
-            new MyTask().execute();
+            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                new MyTask().execute();
+            }
+            else {
+                Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+            }
         });
 
         databaseButton.setOnClickListener(v->{
-            String TAG = "test";
-            db.collection("projects")
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            String dataString = "";
-                            if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    //System.out.println("----->"+document.getId());
-
-                                    dataString += document.getData();
-                                    dataString += ", id="+document.getId();
+            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                db.collection("projects")
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                String dataString = "";
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        dataString += document.getData();
+                                        dataString += ", id=" + document.getId();
+                                    }
+                                    openNewActivity(dataString);
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
                                 }
-                            } else {
-                                Log.w(TAG, "Error getting documents.", task.getException());
                             }
-                            //System.out.println("!!??!!"+dataString+"!!??!!");
-                            openNewActivity(dataString);
-                        }
-                    });
+                        });
+            } else{
+                Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+            }
         });
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -148,21 +153,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
 
     private void saveProject(FirebaseFirestore db, Map<String, Object> user){
-        String TAG = "test";
         db.collection("projects")
                 .add(user)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
+                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Failed to save project, please try again.", Toast.LENGTH_SHORT).show());
     }
 
     //Copied from:
@@ -194,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     }
                 });
             } else {
-                Toast.makeText(this, "Please turn on" + " your location...", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Please turn on your location...", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
             }
@@ -273,51 +266,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
     //End of copied section
 
-    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
-        switch (parent.getId()) {
-            case R.id.covering_spinner:
-                parent.getItemAtPosition(pos);
-                switch ((int) id) {
-                    case 0: //Transparent
-                        uvFen = (float) 0.035078273;
-                        uvRate = (float) 46.48309932;
-                        coveringType = "Transparent";
-                        break;
-                    case 1: //Opaque
-                        uvFen = (float) 0.0003045083;
-                        uvRate = (float) 2.707452846;
-                        coveringType = "Opaque";
-                        break;
-                    case 2: //Standard
-                        uvFen = (float) 0.00801709;
-                        uvRate = (float) 26.48524698;
-                        coveringType = "Standard";
-                        break;
-                    case 3: //No film
-                        uvFen = (float) 0.043617209;
-                        uvRate = (float) 55.94852496;
-                        coveringType = "No film";
-                        break;
-                }
-                break;
-            case R.id.pesticide_spinner:
-                parent.getItemAtPosition(pos);
-                switch ((int) id) {
-                    case 0: //Fenitrothion
-                        pesticideType = "Fenitrothion";
-                        break;
-                }
-                break;
-        }
-    }
-    public void onNothingSelected(AdapterView<?> parent) {
 
-    }
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){spinnerSwitch(parent,pos,id);}
+    public void onNothingSelected(AdapterView<?> parent) {}
 
     @Override
-    public void onLocationChanged(Location location) {
-        currentLocation = location;
-    }
+    public void onLocationChanged(Location location) {currentLocation = location;}
 
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
         String result;
@@ -326,28 +280,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         @Override
         protected Void doInBackground(Void... voids) {
             goButton.setText("Calculating...");
-            String daysOutput = "";
+            String daysOutput;
             if (daysToReachUVDose() > 300) {
                 daysOutput = "Days required: OVER 300";
             } else {
                 daysOutput = "Days required: " + daysToReachUVDose();
             }
             resultOutput.setText(daysOutput);
-            //System.out.println(daysOutput);
-            //System.out.println("Volatilisation Rate: " + volatilisationRate(20) + " ug/m2/hr");
             return null;
         }
 
         private float volatilisationRate(float growingTemp){
-            //Assumption, maybe allow user to input? Are greenhouses temperature controlled?
-            //int growingTemp = 20;
             float tempInKelvin = growingTemp + (float) 273.15;
-            float regressionParam1 = 0;
-            float regressionParam2 = 0;
-            if(pesticideType == "Fenitrothion"){
-                regressionParam1 = (float) 6.3362;
-                regressionParam2 = (float) 3197.8;
-            }
             float vapourPressure = (float) Math.pow(10,(regressionParam1 - (regressionParam2/tempInKelvin)));
             float vapourPressure1mmHg = (float) vapourPressure * (float) 133.322;
             float lnVP = (float) log(vapourPressure1mmHg);
@@ -360,16 +304,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
 
         private float remainingPesticideUV(float startConcentration, float givenUVDose){
-            //float uvDoseRequired = (float) -(10000*log(1-requiredDegradation))/(9*uvFen);
-            //fractionPhotodegraded = 1-(1*EXP(-0.0009*(U9*AB16)))
-            //U9 = UVfen, find how?
-            //AB16 = H9*60*60*36
-            //H9 = UVDose per second I think
-            //This is broken.
             float fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
-            //System.out.println("Fraction: "+fractionPhotodegraded);
             float endConcentration = startConcentration - (fractionPhotodegraded*startConcentration);
-            //System.out.println("Concentration left: "+endConcentration);
             return endConcentration;
         }
 
@@ -409,7 +345,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = formatter.format(requestDate);
                 url = new URL("https://api.sunrise-sunset.org/json?lat="+latitude+"&lng="+longitude+"&date="+dateString);
-                //System.out.println(url);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
                 String stringBuffer;
                 String stringOutput = "";
@@ -426,7 +361,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 JSONObject obj = new JSONObject(result);
                 String dayLength = obj.getJSONObject("results").getString("day_length");
                 float dayLengthInHours = dayLengthToHours(dayLength);
-                //System.out.println(dayLengthInHours);
                 return dayLengthInHours;
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -440,13 +374,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             goButton.setText("GO!");
 
             try {
-                //Example from excel sheet
                 //Okay, this works but remember it's using UVFen, not just a UV dose.
                 //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
                 //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
                 //Maybe the sensors could calculate UVFen and feed that into the app too?
                 float testRemainingAfterUV = remainingPesticideUV(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()));
-                //System.out.println("!!! --> " + testRemainingAfterUV);
                 float testRemainingAfterTemp = remainingPesticideTemp(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()));
 
                 Map<String, Object> user = new HashMap<>();
@@ -456,21 +388,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 user.put("latitude", latitude);
                 user.put("longitude", longitude);
                 user.put("pesticide", pesticideType);
+
                 Date c = Calendar.getInstance().getTime();
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 String formattedDate = df.format(c);
                 user.put("start_date", formattedDate);
+
                 //Add a "last updated" date thing. Also, no harm int adding the time, helps to identify the different projects
                 //Maybe need a unique ID? Might make editing files in the database easier
                 //in mg/m2
                 user.put("start_quantity", enterStartQuantity.getText().toString());
                 user.put("grow_temp", enterGrowTemp.getText().toString());
+
                 //To be updated, running total
                 user.put("grow_hours", enterHours.getText().toString());
                 user.put("uv_dose", enterUVDose.getText().toString());
+
                 //To be updated each time new data is added
                 user.put("current_quantity_uv", Math.max(0, testRemainingAfterUV));
                 user.put("current_quantity_temp", Math.max(0, testRemainingAfterTemp));
+
                 //Guesses as to how to combine the two breakdown rates:
                 user.put("current_quantity_best_one", Math.max(0, Math.min(testRemainingAfterUV, testRemainingAfterTemp)));
                 user.put("current_quantity_worst_one", Math.max(0, Math.max(testRemainingAfterUV, testRemainingAfterTemp)));
@@ -480,8 +417,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 user.put("current_quantity_temp_then_uv", Math.max(0, remainingPesticideUV(testRemainingAfterTemp, Float.parseFloat(enterUVDose.getText().toString()))));
 
                 user.put("uv_fen", uvFen);
+
                 //Based only on UV breakdown, not temperature yet
                 user.put("days_needed", resultOutput.getText().toString().substring(15));
+
+
                 Toast.makeText(MainActivity.this, "Calculation Finished.\n"+resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
 
                 saveProject(db, user);
@@ -493,79 +433,67 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         @Override
         protected void onPreExecute() {
 
-            super.onPreExecute();  //<-DO I HAVE TO?
+            super.onPreExecute();
             try {
                 Float.parseFloat(enterDegradation.getText().toString());
             } catch (Exception e){
                 Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
                 cancel(true);
             }
-
-            //My onPreExecute code below
-
         }
 
-
-
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){
-            switch (parent.getId()) {
-                case R.id.covering_spinner:
-                    parent.getItemAtPosition(pos);
-                    switch ((int) id) {
-                        case 0: //Transparent
-                            uvFen = (float) 0.035078273;
-                            uvRate = (float) 46.48309932;
-                            coveringType = "Transparent";
-                            break;
-                        case 1: //Opaque
-                            uvFen = (float) 0.0003045083;
-                            uvRate = (float) 2.707452846;
-                            coveringType = "Opaque";
-                            break;
-                        case 2: //Standard
-                            uvFen = (float) 0.00801709;
-                            uvRate = (float) 26.48524698;
-                            coveringType = "Standard";
-                            break;
-                        case 3: //No film
-                            uvFen = (float) 0.043617209;
-                            uvRate = (float) 55.94852496;
-                            coveringType = "No film";
-                            break;
-                    }
-                    break;
-                case R.id.pesticide_spinner:
-                    parent.getItemAtPosition(pos);
-                    switch ((int) id) {
-                        case 0: //Fenitrothion
-                            pesticideType = "Fenitrothion";
-                            break;
-                    }
-                    break;
-            }
-        }
-
-        public void onNothingSelected(AdapterView<?> parent) {
-
-        }
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){spinnerSwitch(parent,pos,id);}
+        public void onNothingSelected(AdapterView<?> parent) {}
     }
 
-    //Not at all safe but should work.
     private float dayLengthToHours(String dayLength){
         float totalHours = 0;
-        char h1 = dayLength.charAt(0);
-        char h2 = dayLength.charAt(1);
-        String dayLightHours = h1 + String.valueOf(h2);
+        String dayLightHours = dayLength.charAt(0) + String.valueOf(dayLength.charAt(1));
         totalHours += Float.parseFloat(dayLightHours);
-        char m1 = dayLength.charAt(3);
-        char m2 = dayLength.charAt(4);
-        String dayLightMinutes = m1 + String.valueOf(m2);
+        String dayLightMinutes = dayLength.charAt(3) + String.valueOf(dayLength.charAt(4));
         totalHours += Float.parseFloat(dayLightMinutes)/60;
-        char s1 = dayLength.charAt(6);
-        char s2 = dayLength.charAt(7);
-        String dayLightSeconds = s1 + String.valueOf(s2);
+        String dayLightSeconds = dayLength.charAt(6) + String.valueOf(dayLength.charAt(7));
         totalHours += Float.parseFloat(dayLightSeconds)/60/60;
-
         return totalHours;
+    }
+
+    private void spinnerSwitch(AdapterView<?> parent, int pos, long id){
+        switch (parent.getId()) {
+            case R.id.covering_spinner:
+                parent.getItemAtPosition(pos);
+                switch ((int) id) {
+                    case 0: //Transparent
+                        uvFen = (float) 0.035078273;
+                        uvRate = (float) 46.48309932;
+                        coveringType = "Transparent";
+                        break;
+                    case 1: //Opaque
+                        uvFen = (float) 0.0003045083;
+                        uvRate = (float) 2.707452846;
+                        coveringType = "Opaque";
+                        break;
+                    case 2: //Standard
+                        uvFen = (float) 0.00801709;
+                        uvRate = (float) 26.48524698;
+                        coveringType = "Standard";
+                        break;
+                    case 3: //No film
+                        uvFen = (float) 0.043617209;
+                        uvRate = (float) 55.94852496;
+                        coveringType = "No film";
+                        break;
+                }
+                break;
+            case R.id.pesticide_spinner:
+                parent.getItemAtPosition(pos);
+                switch ((int) id) {
+                    case 0: //Fenitrothion
+                        pesticideType = "Fenitrothion";
+                        regressionParam1 = (float) 6.3362;
+                        regressionParam2 = (float) 3197.8;
+                        break;
+                }
+                break;
+        }
     }
 }

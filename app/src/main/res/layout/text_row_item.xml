@@ -1,31 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
 
-    <Button
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="300dp"
-        android:layout_marginTop="300dp"
-        android:text="Update"
-        android:id="@+id/projectButton"
-        />
+            <Button
+                android:id="@+id/projectButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:gravity="right"
+                android:layout_marginEnd="@dimen/_5sdp"
+                android:text="Update"
+                app:layout_constraintBottom_toBottomOf="@+id/textView"/>
 
-    <Button
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="300dp"
-        android:layout_marginTop="255dp"
-        android:text="Delete"
-        android:id="@+id/deleteButton"
-        />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:gravity="right"
+                android:layout_marginEnd="@dimen/_5sdp"
+                android:text="Delete"
+                android:id="@+id/deleteButton"
+                app:layout_constraintBottom_toTopOf="@+id/projectButton"/>
+        </LinearLayout>
+    </ScrollView>
 
 </FrameLayout>

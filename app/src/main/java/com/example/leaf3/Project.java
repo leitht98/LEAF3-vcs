@@ -34,9 +34,9 @@ public class Project {
         startQuantity = enteredStartQuantity;
         degradationRequired = enteredDegradation;
         growHours = enteredHours;
-        additionalHours = enteredHours;
+        //additionalHours = enteredHours;
         uvDose = enteredUVDose;
-        additionalUVDose = enteredUVDose;
+        //additionalUVDose = enteredUVDose;
 
         float testRemainingAfterUV = remainingPesticideUV(enteredStartQuantity, enteredUVDose);
         float testRemainingAfterTemp = remainingPesticideTemp(enteredStartQuantity, enteredHours);
@@ -67,7 +67,7 @@ public class Project {
     public void updateProjectData(float enteredHours,float enteredUVDose){
         growHours = growHours + enteredHours;
         uvDose = uvDose + enteredUVDose;
-        additionalHours = enteredHours;
+        //additionalHours = enteredHours;
 
         currentQuantityUV = Math.max(0,remainingPesticideUV(currentQuantityUV,enteredUVDose));
         currentQuantityTemp = Math.max(0,remainingPesticideTemp(currentQuantityTemp,enteredHours));

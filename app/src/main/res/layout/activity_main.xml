@@ -6,162 +6,163 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/covering"
-        app:layout_constraintBottom_toTopOf="@id/covering_spinner"
-        tools:layout_editor_absoluteX="0dp"
-        android:id="@+id/covering_label"/>
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <Spinner
-        android:id="@+id/covering_spinner"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown"
-        android:tooltipText="@string/covering_no_selection"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/covering_label"
-        app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/covering"
+                app:layout_constraintBottom_toTopOf="@id/covering_spinner"
+                tools:layout_editor_absoluteX="0dp"
+                android:id="@+id/covering_label"/>
 
-    <TextView
-        android:id="@+id/pesticide_label"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Pesticide"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/covering_spinner"/>
+            <Spinner
+                android:id="@+id/covering_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/btn_dropdown"
+                android:spinnerMode="dropdown"
+                android:tooltipText="@string/covering_no_selection"
+                app:layout_constraintTop_toBottomOf="@id/covering_label" />
 
-    <Spinner
+            <TextView
+                android:id="@+id/pesticide_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pesticide"
+                android:gravity="center"
+                app:layout_constraintTop_toBottomOf="@id/covering_spinner"/>
 
-        android:id="@+id/pesticide_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown"
-        android:tooltipText="Select a pesticide"
-        app:layout_constraintTop_toBottomOf="@id/pesticide_label" />
+            <Spinner
+                android:id="@+id/pesticide_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/btn_dropdown"
+                android:spinnerMode="dropdown"
+                android:tooltipText="Select a pesticide"
+                app:layout_constraintTop_toBottomOf="@id/pesticide_label" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/pesticide_spinner"
-        android:text="@string/result"
-        android:gravity="center"
-        android:id="@+id/result"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/pesticide_spinner"
+                android:text="@string/result"
+                android:gravity="center"
+                android:id="@+id/result"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/result"
-        android:id="@+id/result_output"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/result"
+                android:id="@+id/result_output"/>
 
-    <!--
-    <TextView
-        android:id="@+id/latTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/result_output"
-        android:text="Latitude will be here! "/>
+            <!--
+            <TextView
+                android:id="@+id/latTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/result_output"
+                android:text="Latitude will be here! "/>
 
-    <TextView
-        android:id="@+id/lonTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Longitude will be here! "
-        app:layout_constraintTop_toBottomOf="@+id/latTextView"/>
+            <TextView
+                android:id="@+id/lonTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Longitude will be here! "
+                app:layout_constraintTop_toBottomOf="@+id/latTextView"/>
 
-    -->
+            -->
 
-    <TextView
-        android:id="@+id/enterStartQuantityLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter the start quantity of the pesticide (mg/m2):"
-        app:layout_constraintTop_toBottomOf="@+id/result_output"/>
+            <TextView
+                android:id="@+id/enterStartQuantityLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter the start quantity of the pesticide (mg/m2):"
+                app:layout_constraintTop_toBottomOf="@+id/result_output"/>
 
-    <EditText
-        android:id="@+id/enterStartQuantity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="50"
-        app:layout_constraintTop_toBottomOf="@+id/enterStartQuantityLabel"/>
+            <EditText
+                android:id="@+id/enterStartQuantity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="50"
+                app:layout_constraintTop_toBottomOf="@+id/enterStartQuantityLabel"/>
 
-    <TextView
-        android:id="@+id/enterDegradationLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter the percentage you want it to degrade by:"
-        app:layout_constraintTop_toBottomOf="@+id/enterStartQuantity"/>
+            <TextView
+                android:id="@+id/enterDegradationLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter the percentage you want it to degrade by:"
+                app:layout_constraintTop_toBottomOf="@+id/enterStartQuantity"/>
 
-    <EditText
-        android:id="@+id/enterDegradation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="1"
-        app:layout_constraintTop_toBottomOf="@+id/enterDegradationLabel"/>
+            <EditText
+                android:id="@+id/enterDegradation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1"
+                app:layout_constraintTop_toBottomOf="@+id/enterDegradationLabel"/>
 
-    <TextView
-        android:id="@+id/enterGrowTempLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter the temperature you're growing at in degrees C:"
-        app:layout_constraintTop_toBottomOf="@+id/enterDegradation"/>
+            <TextView
+                android:id="@+id/enterGrowTempLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter the temperature you're growing at in degrees C:"
+                app:layout_constraintTop_toBottomOf="@+id/enterDegradation"/>
 
-    <EditText
-        android:id="@+id/enterGrowTemp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="20"
-        app:layout_constraintTop_toBottomOf="@+id/enterGrowTempLabel"/>
+            <EditText
+                android:id="@+id/enterGrowTemp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="20"
+                app:layout_constraintTop_toBottomOf="@+id/enterGrowTempLabel"/>
 
-    <TextView
-        android:id="@+id/enterHoursLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter the number of hours at this temperature:"
-        app:layout_constraintTop_toBottomOf="@+id/enterGrowTemp"/>
+            <TextView
+                android:id="@+id/enterHoursLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter the number of hours at this temperature:"
+                app:layout_constraintTop_toBottomOf="@+id/enterGrowTemp"/>
 
-    <EditText
-        android:id="@+id/enterHours"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="36"
-        app:layout_constraintTop_toBottomOf="@+id/enterHoursLabel"/>
+            <EditText
+                android:id="@+id/enterHours"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="36"
+                app:layout_constraintTop_toBottomOf="@+id/enterHoursLabel"/>
 
-    <TextView
-        android:id="@+id/enterUVDoseLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter the given UV dose:"
-        app:layout_constraintTop_toBottomOf="@+id/enterHours"/>
+            <TextView
+                android:id="@+id/enterUVDoseLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter the given UV dose:"
+                app:layout_constraintTop_toBottomOf="@+id/enterHours"/>
 
-    <EditText
-        android:id="@+id/enterUVDose"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="350885.8888"
-        app:layout_constraintTop_toBottomOf="@+id/enterUVDoseLabel"/>
+            <EditText
+                android:id="@+id/enterUVDose"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="350885.8888"
+                app:layout_constraintTop_toBottomOf="@+id/enterUVDoseLabel"/>
 
-    <Button
-        android:id="@+id/goButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Go!"
-        app:layout_constraintTop_toBottomOf="@+id/enterUVDose"/>
+            <Button
+                android:id="@+id/goButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Go!"
+                app:layout_constraintTop_toBottomOf="@+id/enterUVDose"/>
 
-    <Button
-        android:id="@+id/databaseButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Access database"
-        app:layout_constraintTop_toBottomOf="@+id/goButton"/>
-
-
+            <Button
+                android:id="@+id/databaseButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Access database"
+                app:layout_constraintTop_toBottomOf="@+id/goButton"/>
+        </LinearLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

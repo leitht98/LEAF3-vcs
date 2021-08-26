@@ -43,6 +43,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="YES"
+                android:backgroundTint="@android:color/holo_red_light"
                 app:layout_constraintBottom_toBottomOf="parent"/>
         </LinearLayout>
     </ScrollView>

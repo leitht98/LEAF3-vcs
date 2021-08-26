@@ -19,6 +19,17 @@
                 />
 
             <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:gravity="right"
+                android:layout_marginEnd="@dimen/_5sdp"
+                android:text="Delete"
+                android:backgroundTint="@android:color/holo_red_light"
+                android:id="@+id/deleteButton"
+                app:layout_constraintBottom_toBottomOf="@+id/textView"/>
+
+            <Button
                 android:id="@+id/projectButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -26,17 +37,9 @@
                 android:gravity="right"
                 android:layout_marginEnd="@dimen/_5sdp"
                 android:text="Update"
-                app:layout_constraintBottom_toBottomOf="@+id/textView"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:gravity="right"
-                android:layout_marginEnd="@dimen/_5sdp"
-                android:text="Delete"
-                android:id="@+id/deleteButton"
                 app:layout_constraintBottom_toTopOf="@+id/projectButton"/>
+
+
         </LinearLayout>
     </ScrollView>
 

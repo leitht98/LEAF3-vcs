@@ -14,7 +14,7 @@ import static java.lang.Math.log;
 
 public class Project {
     float currentQuantityBestOne, currentQuantityCombinedBreakdown, currentQuantityMidPoint, currentQuantityTemp, currentQuantityTempThenUV;
-    float currentQuantityUV, currentQuantityUVThenTemp, currentQuantityWorstOne, degradationRequired, growHours, additionalHours, uvDose, additionalUVDose, startQuantity, uvFen, growTemp;
+    float currentQuantityUV, currentQuantityUVThenTemp, currentQuantityWorstOne, degradationRequired, growHours, uvDose, startQuantity, uvFen, growTemp;
     String pesticideType, projectID, coveringType, longitude, latitude, formattedDate, resultOutput;
     int daysNeeded;
     FirebaseFirestore db;
@@ -34,9 +34,7 @@ public class Project {
         startQuantity = enteredStartQuantity;
         degradationRequired = enteredDegradation;
         growHours = enteredHours;
-        //additionalHours = enteredHours;
         uvDose = enteredUVDose;
-        //additionalUVDose = enteredUVDose;
 
         float testRemainingAfterUV = remainingPesticideUV(enteredStartQuantity, enteredUVDose);
         float testRemainingAfterTemp = remainingPesticideTemp(enteredStartQuantity, enteredHours);
@@ -67,7 +65,6 @@ public class Project {
     public void updateProjectData(float enteredHours,float enteredUVDose){
         growHours = growHours + enteredHours;
         uvDose = uvDose + enteredUVDose;
-        //additionalHours = enteredHours;
 
         currentQuantityUV = Math.max(0,remainingPesticideUV(currentQuantityUV,enteredUVDose));
         currentQuantityTemp = Math.max(0,remainingPesticideTemp(currentQuantityTemp,enteredHours));

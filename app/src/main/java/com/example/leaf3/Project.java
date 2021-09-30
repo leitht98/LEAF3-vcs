@@ -15,22 +15,23 @@ import static java.lang.Math.log;
 public class Project {
     float currentQuantityBestOne, currentQuantityCombinedBreakdown, currentQuantityMidPoint, currentQuantityTemp, currentQuantityTempThenUV;
     float currentQuantityUV, currentQuantityUVThenTemp, currentQuantityWorstOne, degradationRequired, growHours, uvDose, startQuantity, uvFen, growTemp;
-    String pesticideType, projectID, coveringType, longitude, latitude, formattedDate, resultOutput;
-    int daysNeeded;
+    String pesticideType, projectID, coveringType, formattedDate;
+    //String resultOutput;
+    //int daysNeeded;
     FirebaseFirestore db;
 
     public Project() {
         db = FirebaseFirestore.getInstance();
     }
 
-    public void saveToDatabase(float enteredStartQuantity, float enteredUVDose, float enteredHours, float enteredGrowTemp, float enteredDegradation, String enteredResultOutput, String enteredCovering, String enteredLatitude, String enteredLongitude, String enteredPesticide, float enteredUVFen){
+    public void saveToDatabase(float enteredStartQuantity, float enteredUVDose, float enteredHours, float enteredGrowTemp, float enteredDegradation, String enteredCovering, String enteredPesticide, float enteredUVFen){
         growTemp = enteredGrowTemp;
         coveringType = enteredCovering;
-        latitude = enteredLatitude;
-        longitude = enteredLongitude;
+        //latitude = enteredLatitude;
+        //longitude = enteredLongitude;
         pesticideType = enteredPesticide;
         uvFen = enteredUVFen;
-        resultOutput = enteredResultOutput;
+        //resultOutput = enteredResultOutput;
         startQuantity = enteredStartQuantity;
         degradationRequired = enteredDegradation;
         growHours = enteredHours;
@@ -54,7 +55,7 @@ public class Project {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         formattedDate = df.format(c);
 
-        daysNeeded = Integer.parseInt(resultOutput.substring(15));
+        //daysNeeded = Integer.parseInt(resultOutput.substring(15));
 
         Map<String, Object> user = sendToDatabase();
 
@@ -105,11 +106,11 @@ public class Project {
                 case "id": projectID = labelDataPair[1]; break;
                 case "covering": coveringType = labelDataPair[1]; break;
                 case "degradation required": degradationRequired = Float.parseFloat(labelDataPair[1]); break;
-                case "longitude": longitude = labelDataPair[1]; break;
-                case "latitude": latitude = labelDataPair[1]; break;
+                //case "longitude": longitude = labelDataPair[1]; break;
+                //case "latitude": latitude = labelDataPair[1]; break;
                 case "start date": formattedDate = labelDataPair[1]; break;
                 case "start quantity": startQuantity = Float.parseFloat(labelDataPair[1]); break;
-                case "days needed": daysNeeded = Integer.parseInt(labelDataPair[1]); break;
+                //case "days needed": daysNeeded = Integer.parseInt(labelDataPair[1]); break;
                 default: break;
             }
         }
@@ -120,8 +121,8 @@ public class Project {
 
         user.put("covering", coveringType);
         user.put("degradation_required", degradationRequired);
-        user.put("latitude", latitude);
-        user.put("longitude", longitude);
+        //user.put("latitude", latitude);
+        //user.put("longitude", longitude);
         user.put("pesticide", pesticideType);
         user.put("start_date", formattedDate);
 
@@ -151,7 +152,7 @@ public class Project {
         user.put("uv_fen", uvFen);
 
         //Based only on UV breakdown, not temperature yet
-        user.put("days_needed", daysNeeded);
+        //user.put("days_needed", daysNeeded);
 
 
         return user;

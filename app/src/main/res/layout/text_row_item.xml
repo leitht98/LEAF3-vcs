@@ -38,9 +38,5 @@
                 android:layout_marginEnd="@dimen/_5sdp"
                 android:text="Update"
                 app:layout_constraintBottom_toTopOf="@+id/projectButton"/>
-
-
         </LinearLayout>
-    </ScrollView>
-
-</FrameLayout>
+    </ScrollView></FrameLayout>

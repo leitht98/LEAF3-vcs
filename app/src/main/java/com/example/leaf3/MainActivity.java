@@ -1,59 +1,37 @@
 package com.example.leaf3;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
-import android.provider.Settings;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Objects;
 
-import static java.lang.Math.log;
-
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
+
     Location currentLocation = new Location("");
-    protected String latitude,longitude;
+    //protected String latitude,longitude;
     protected float uvFen, regressionParam1, regressionParam2;
-    private TextView resultOutput;
+    //private TextView resultOutput;
     private FusedLocationProviderClient mFusedLocationClient;
 
     //private TextView latitudeTextView, longitudeTextView;
@@ -129,9 +107,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        resultOutput = (TextView) findViewById(R.id.result_output);
+        //resultOutput = (TextView) findViewById(R.id.result_output);
 
-        getLastLocation();
+        //getLastLocation();
     }
 
     public void openNewActivity(String dataString){
@@ -140,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         startActivity(intent);
     }
 
+    /*
     //Copied from:
     //https://www.geeksforgeeks.org/how-to-get-user-location-in-android/
     @SuppressLint("MissingPermission")
@@ -232,6 +211,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
     //End of copied section
 
+     */
+
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){spinnerSwitch(parent,pos,id);}
     public void onNothingSelected(AdapterView<?> parent) {}
@@ -241,23 +222,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @SuppressLint("StaticFieldLeak")
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
-        String result;
+        //String result;
 
         @SuppressLint("SetTextI18n")
         @Override
         protected Void doInBackground(Void... voids) {
             goButton.setText("Calculating...");
-            resultOutput.setText("");
+            /*resultOutput.setText("");
             String daysOutput;
             if (daysToReachUVDose() > 300) {
                 daysOutput = "Days required: OVER 300";
             } else {
                 daysOutput = "Days required: " + daysToReachUVDose();
             }
-            resultOutput.setText(daysOutput);
+            resultOutput.setText(daysOutput);*/
             return null;
         }
 
+        /*
         private int daysToReachUVDose() {
 
             float requiredDegradation = (float) Float.parseFloat(enterDegradation.getText().toString()) / 100;
@@ -311,6 +293,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             return (float) 0.0;
         }
 
+         */
+
         @SuppressLint("SetTextI18n")
         @Override
         protected void onPostExecute(Void aVoid) {
@@ -318,13 +302,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             goButton.setText("GO!");
 
             try {
-                //Okay, this works but remember it's using UVFen, not just a UV dose.
-                //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
-                //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
-                Project project = new Project();
+                if(Float.parseFloat(enterDegradation.getText().toString())<100&&Float.parseFloat(enterDegradation.getText().toString())>=0) {
+                    //Okay, this works but remember it's using UVFen, not just a UV dose.
+                    //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
+                    //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
+                    Project project = new Project();
 
-                project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()),Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
-                Toast.makeText(MainActivity.this, "Calculation Finished.\n"+resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
+                    //Need to add error message if it fails to write to the database.
+                    //project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
+                    project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen);
+                    //Toast.makeText(MainActivity.this, "Calculation Finished.\n" + resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Calculation Finished.\nProject is being saved...", Toast.LENGTH_SHORT).show();
+                } else{
+                    Toast.makeText(MainActivity.this, "Degradation must be between 0 and 100%", Toast.LENGTH_SHORT).show();
+                }
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
             }
@@ -346,6 +337,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         public void onNothingSelected(AdapterView<?> parent) {}
     }
 
+    /*
     private float dayLengthToHours(String dayLength){
         float totalHours = 0;
         String dayLightHours = dayLength.charAt(0) + String.valueOf(dayLength.charAt(1));
@@ -356,6 +348,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         totalHours += Float.parseFloat(dayLightSeconds)/60/60;
         return totalHours;
     }
+
+     */
 
     @SuppressLint("NonConstantResourceId")
     private void spinnerSwitch(AdapterView<?> parent, int pos, long id){

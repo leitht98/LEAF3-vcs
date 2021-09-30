@@ -49,6 +49,7 @@
                 android:tooltipText="Select a pesticide"
                 app:layout_constraintTop_toBottomOf="@id/pesticide_label" />
 
+            <!--
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -62,6 +63,8 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@+id/result"
                 android:id="@+id/result_output"/>
+
+            -->
 
             <!--
             <TextView
@@ -84,8 +87,8 @@
                 android:id="@+id/enterStartQuantityLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the start quantity of the pesticide (mg/m2):"
-                app:layout_constraintTop_toBottomOf="@+id/result_output"/>
+                android:text="Enter the start concentration of the pesticide (mg/m2):"
+                app:layout_constraintTop_toBottomOf="@+id/pesticide_label"/>
 
             <EditText
                 android:id="@+id/enterStartQuantity"
@@ -94,6 +97,8 @@
                 android:text="50"
                 app:layout_constraintTop_toBottomOf="@+id/enterStartQuantityLabel"/>
 
+
+            <!-- -->
             <TextView
                 android:id="@+id/enterDegradationLabel"
                 android:layout_width="match_parent"
@@ -105,8 +110,10 @@
                 android:id="@+id/enterDegradation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1"
+                android:text="99"
                 app:layout_constraintTop_toBottomOf="@+id/enterDegradationLabel"/>
+
+
 
             <TextView
                 android:id="@+id/enterGrowTempLabel"

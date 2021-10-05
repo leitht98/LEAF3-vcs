@@ -22,6 +22,7 @@ public class DeleteProject extends AppCompatActivity {
         projectData = findViewById(R.id.project_data);
         Intent intent = getIntent();
         String dataString = intent.getStringExtra("data");
+        String username = intent.getStringExtra("username");
         projectData.setText(dataString);
         noButton = findViewById(R.id.noButton);
         noButton.setOnClickListener(v -> this.finish());
@@ -37,7 +38,7 @@ public class DeleteProject extends AppCompatActivity {
         yesButton = findViewById(R.id.yesButton);
         yesButton.setOnClickListener(v -> {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("projects").
+            db.collection(username).
                     document(documentID)
                     .delete().addOnSuccessListener(aVoid -> {
                         Toast.makeText(DeleteProject.this, "Project has been deleted", Toast.LENGTH_SHORT).show();

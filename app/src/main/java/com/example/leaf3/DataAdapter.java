@@ -14,35 +14,38 @@ import androidx.recyclerview.widget.RecyclerView;
 public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
 
     final private String[] localDataSet;
+    String localUsername;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView textView;
 
-        public ViewHolder(View view) {
+        public ViewHolder(View view, String username) {
             super(view);
             textView = (TextView) view.findViewById(R.id.textView);
             if(textView.getText().equals("")) {
                 Button projectButton = (Button) view.findViewById(R.id.projectButton);
-                projectButton.setOnClickListener(v -> openNewActivity((String) textView.getText(),view));
+                projectButton.setOnClickListener(v -> openNewActivity((String) textView.getText(), username, view));
 
                 Button deleteButton = (Button) view.findViewById(R.id.deleteButton);
-                deleteButton.setOnClickListener(v -> openDeleteActivity((String) textView.getText(),view));
+                deleteButton.setOnClickListener(v -> openDeleteActivity((String) textView.getText(), username, view));
             }
         }
 
         public TextView getTextView() {return textView;}
 
-        public void openNewActivity(String dataString, View view){
+        public void openNewActivity(String dataString, String username, View view){
             Context context = view.getContext();
             Intent intent = new Intent(context, UpdateProject.class);
             intent.putExtra("data",dataString);
+            intent.putExtra("username",username);
             context.startActivity(intent);
         }
 
-        public void openDeleteActivity(String dataString, View view){
+        public void openDeleteActivity(String dataString, String username, View view){
             Context context = view.getContext();
             Intent intent = new Intent(context, DeleteProject.class);
             intent.putExtra("data",dataString);
+            intent.putExtra("username",username);
             context.startActivity(intent);
         }
     }
@@ -54,8 +57,12 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
      *
      * @param dataSet String[] containing the data to populate views to be used
      * by RecyclerView.
+     * @param username
      */
-    public DataAdapter(String[] dataSet) {localDataSet = dataSet;}
+    public DataAdapter(String[] dataSet, String username) {
+        localDataSet = dataSet;
+        localUsername = username;
+    }
 
     // Create new views (invoked by the layout manager)
     @NonNull
@@ -64,7 +71,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.text_row_item, viewGroup, false);
-        return new ViewHolder(view);
+        return new ViewHolder(view, localUsername);
     }
 
     // Replace the contents of a view (invoked by the layout manager)

@@ -24,7 +24,7 @@ public class Project {
         db = FirebaseFirestore.getInstance();
     }
 
-    public void saveToDatabase(float enteredStartQuantity, float enteredUVDose, float enteredHours, float enteredGrowTemp, float enteredDegradation, String enteredCovering, String enteredPesticide, float enteredUVFen){
+    public void saveToDatabase(float enteredStartQuantity, float enteredUVDose, float enteredHours, float enteredGrowTemp, float enteredDegradation, String enteredCovering, String enteredPesticide, float enteredUVFen, String username){
         growTemp = enteredGrowTemp;
         coveringType = enteredCovering;
         //latitude = enteredLatitude;
@@ -59,11 +59,11 @@ public class Project {
 
         Map<String, Object> user = sendToDatabase();
 
-        db.collection("projects")
+        db.collection(username)
                 .add(user);
     }
 
-    public void updateProjectData(float enteredHours,float enteredUVDose){
+    public void updateProjectData(float enteredHours,float enteredUVDose, String username){
         growHours = growHours + enteredHours;
         uvDose = uvDose + enteredUVDose;
 
@@ -80,7 +80,7 @@ public class Project {
         currentQuantityTempThenUV = Math.max(0,remainingPesticideUV(remainingPesticideTemp(currentQuantityTempThenUV,enteredHours),enteredUVDose));
 
         Map<String, Object> user = sendToDatabase();
-        db.collection("projects").
+        db.collection(username).
                 document(projectID).
                 set(user);
     }

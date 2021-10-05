@@ -26,6 +26,7 @@ public class UpdateProject extends AppCompatActivity {
 
         Intent intent = getIntent();
         String dataString = intent.getStringExtra("data");
+        String username = intent.getStringExtra("username");
         Project project = new Project();
         project.loadProjectData(dataString);
 
@@ -35,7 +36,7 @@ public class UpdateProject extends AppCompatActivity {
 
         updateButton.setOnClickListener(v -> {
             try {
-                project.updateProjectData(Float.parseFloat(enterHours.getText().toString()),Float.parseFloat(enterUVDose.getText().toString()));
+                project.updateProjectData(Float.parseFloat(enterHours.getText().toString()),Float.parseFloat(enterUVDose.getText().toString()),username);
                 Intent i=new Intent(this, MainActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 this.startActivity(i);

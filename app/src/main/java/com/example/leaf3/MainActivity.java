@@ -28,6 +28,7 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
+    String username = "Tom";
     Location currentLocation = new Location("");
     //protected String latitude,longitude;
     protected float uvFen, regressionParam1, regressionParam2;
@@ -35,10 +36,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private FusedLocationProviderClient mFusedLocationClient;
 
     //private TextView latitudeTextView, longitudeTextView;
-    int PERMISSION_ID = 44;
+    //int PERMISSION_ID = 44;
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
     private Button goButton;
     float uvRate = (float) 1;
+
     String coveringType, pesticideType;
 
     @Override
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
                     connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
-                db.collection("projects")
+                db.collection(username)
                         .get()
                         .addOnCompleteListener(task -> {
                             StringBuilder dataString = new StringBuilder();
@@ -115,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     public void openNewActivity(String dataString){
         Intent intent = new Intent(this, DataLog.class);
         intent.putExtra("data_string", dataString);
+        intent.putExtra("username", username);
         startActivity(intent);
     }
 
@@ -310,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
                     //Need to add error message if it fails to write to the database.
                     //project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
-                    project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen);
+                    project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, username);
                     //Toast.makeText(MainActivity.this, "Calculation Finished.\n" + resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
                     Toast.makeText(MainActivity.this, "Calculation Finished.\nProject is being saved...", Toast.LENGTH_SHORT).show();
                 } else{

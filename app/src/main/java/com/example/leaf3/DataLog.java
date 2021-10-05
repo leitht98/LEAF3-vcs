@@ -25,6 +25,7 @@ public class DataLog extends AppCompatActivity {
 
         Intent intent = getIntent();
         dataString = intent.getStringExtra("data_string");
+        String username = intent.getStringExtra("username");
         String[] dataArray = dataString.split("\\{");
 
         for (int i=0; i<dataArray.length; i++){
@@ -54,7 +55,7 @@ public class DataLog extends AppCompatActivity {
             }
         }
         //get a new instance of a very basic custom adapter (taken from the google tutorials, mostly)
-        DataAdapter dataAdapter = new DataAdapter(trimArray);
+        DataAdapter dataAdapter = new DataAdapter(trimArray,username);
         //add the adapter to the list thing
         projectDataList.setAdapter(dataAdapter);
         //make a layout manager and add it

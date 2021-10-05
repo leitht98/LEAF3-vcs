@@ -28,7 +28,7 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
-    String username = "Tom";
+    String username = "Cris";
     Location currentLocation = new Location("");
     //protected String latitude,longitude;
     protected float uvFen, regressionParam1, regressionParam2;

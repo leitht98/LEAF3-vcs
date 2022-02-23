@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -24,11 +25,15 @@ import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
-    String username = "Cris";
+    //Hardcoded username to store projects in individual databases, eventually this will be entered by the user
+    String username = "Paola";
+    //To store the project location
     Location currentLocation = new Location("");
     //protected String latitude,longitude;
     protected float uvFen, regressionParam1, regressionParam2;
@@ -38,8 +43,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     //private TextView latitudeTextView, longitudeTextView;
     //int PERMISSION_ID = 44;
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
-    private Button goButton;
+    private Button goButton, getDataButton;
     float uvRate = (float) 1;
+    int myTaskBehaviour = 0;
+
+    ArrayList<String> tempCoveringSpinnerArray = new ArrayList<>();
 
     String coveringType, pesticideType;
 
@@ -48,35 +56,140 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //You should probably do the loading page here?
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        Spinner coveringSpinner = (Spinner) findViewById(R.id.covering_spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.covering_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
-        coveringSpinner.setAdapter(adapter);
+
+        //Array to populate with coverings, change to store Coverings, not Strings
+        ArrayList<String> coveringSpinnerArray = new ArrayList<>();
+        //coveringSpinnerArray.add("Test");
+        //coveringSpinnerArray.add("Transparent1");
+        //coveringSpinnerArray.add("Opaque1");
+        //coveringSpinnerArray.add("Standard1");
+        //coveringSpinnerArray.add("No film1");
+
+        tempCoveringSpinnerArray = new ArrayList<>();
+        //This works. Okay, just call it from inside ASync and then call ASync here instead of this
+        //new LoadSpinnerDataAsync().execute();
+        //new MyTask().execute();
+        //tempCoveringSpinnerArray = getCoveirngs();
+        //openLoadActivity("A loading screen!x");
+        //openNewActivity("wdc wlc");
+
+        /*ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
+            db.collection("coverings")
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        StringBuilder dataString = new StringBuilder();
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                dataString.append(document.getData());
+                            }
+                            //openNewActivity(dataString.toString());
+                            //Toast.makeText(MainActivity.this, dataString.toString(), Toast.LENGTH_SHORT).show();
+                            System.out.println(dataString);
+                            //{UV Rate=2.707452846, UV Fen=0.0003045083, name=Opaque}, id=0ELYwBTDJezJp1iT4JWJ{UV Rate=55.94852496, UV Fen=0.043617209, name=No film}, id=gU7LbC3LfFV0uKTHmdfq{UV Rate=26.48524698, UV Fen=0.00801709, name=Standard}, id=i6zYAC4L8O04l6Uad1Z6{UV Rate=46.48309932, UV Fen=0.035078273, name=Transparent}, id=jPQc0r6jo5isloaM4LE1
+                            String[] coveringNamesRaw = dataString.toString().split("name=");
+                            for(String i : coveringNamesRaw) {
+                                System.out.println(i);
+                            }
+                            System.out.println("!!!!!!!!!!!!!!!!!!!");
+                            String[] coveringNamesTrimmed = Arrays.copyOfRange(coveringNamesRaw, 1, coveringNamesRaw.length);
+
+                            for(String i : coveringNamesTrimmed) {
+                                System.out.println(i);
+                                //Toast.makeText(MainActivity.this, i, Toast.LENGTH_SHORT).show();
+                                String[] tempArray = i.split("\\}");
+                                //Toast.makeText(MainActivity.this, tempArray[0], Toast.LENGTH_SHORT).show();
+                                tempCoveringSpinnerArray.add(tempArray[0]);
+
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+                        }
+                        *//*Toast.makeText(MainActivity.this, ""+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+                        for(String j : tempCoveringSpinnerArray){
+                            Toast.makeText(MainActivity.this, j, Toast.LENGTH_SHORT).show();
+                        }*//*
+                    });
+        } else{
+            Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+        }*/
+
+        /*Toast.makeText(MainActivity.this, ""+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+        for(String j : tempCoveringSpinnerArray){
+            Toast.makeText(MainActivity.this, j, Toast.LENGTH_SHORT).show();
+        }*/
+
+        //coveringSpinnerArray.remove(0);
+        /*
+        Toast.makeText(MainActivity.this, "%"+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+        for(String i : tempCoveringSpinnerArray){
+            Toast.makeText(MainActivity.this, i, Toast.LENGTH_SHORT).show();
+        }*/
+        if(tempCoveringSpinnerArray.size()!=0){
+            for(String i : tempCoveringSpinnerArray){
+                coveringSpinnerArray.add(i);
+            }
+        } else{
+            coveringSpinnerArray.add("Test");
+        }
+
+        //Putting pesticide/ covering data into spinners once you've got it - yet to figure that part out
+        Spinner coveringSpinner = findViewById(R.id.covering_spinner);
+        ArrayAdapter<String> coveringStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
+        coveringStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        coveringSpinner.setAdapter(coveringStringAdapter);
         coveringSpinner.setOnItemSelectedListener(this);
 
-        Spinner pesticideSpinner = (Spinner) findViewById(R.id.pesticide_spinner);
-        ArrayAdapter<CharSequence> pAdapter = ArrayAdapter.createFromResource(this, R.array.pesticides_array, android.R.layout.simple_spinner_item);
-        pAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
-        pesticideSpinner.setAdapter(pAdapter);
+        /*Toast.makeText(MainActivity.this, "!"+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+        for(String j : tempCoveringSpinnerArray){
+            Toast.makeText(MainActivity.this, "!"+j, Toast.LENGTH_SHORT).show();
+        }*/
+
+
+        ArrayList<String> pesticideSpinnerArray = new ArrayList<>();
+        pesticideSpinnerArray.add("Fenitrothion");
+
+        Spinner pesticideSpinner = findViewById(R.id.pesticide_spinner);
+        ArrayAdapter<String> pesticideStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, pesticideSpinnerArray);
+        pesticideStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        pesticideSpinner.setAdapter(pesticideStringAdapter);
         pesticideSpinner.setOnItemSelectedListener(this);
 
-        //latitudeTextView = findViewById(R.id.latTextView);
-        //longitudeTextView = findViewById(R.id.lonTextView);
-
+        //Adding all the other items
         enterDegradation = findViewById(R.id.enterDegradation);
         enterStartQuantity = findViewById(R.id.enterStartQuantity);
         enterGrowTemp = findViewById(R.id.enterGrowTemp);
         enterHours = findViewById(R.id.enterHours);
         enterUVDose = findViewById(R.id.enterUVDose);
+        getDataButton = findViewById(R.id.getDataButton);
         goButton = findViewById(R.id.goButton);
         Button databaseButton = findViewById(R.id.databaseButton);
 
+        //This works, clearly pulling the data correctly because it's showing up
+        /*Toast.makeText(MainActivity.this, "!!!>"+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+        for(String j : tempCoveringSpinnerArray){
+            Toast.makeText(MainActivity.this, "!!!>"+j, Toast.LENGTH_SHORT).show();
+        }*/
+
+        getDataButton.setOnClickListener(v->{
+            openLoadActivity("A loading screen!");
+        });
+
+        ArrayList<String> finalTempCoveringSpinnerArray = tempCoveringSpinnerArray;
         goButton.setOnClickListener(v->{
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
                     connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
+                /*Toast.makeText(MainActivity.this, "!!!"+ finalTempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+                for(String j : finalTempCoveringSpinnerArray){
+                    Toast.makeText(MainActivity.this, "!!!"+j, Toast.LENGTH_SHORT).show();
+                }*/
+                //This is where you call MyTask, the Async thing, so just do another one for getting covering data
                 new MyTask().execute();
             }
             else {
@@ -84,7 +197,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             }
         });
 
+        ArrayList<String> finalTempCoveringSpinnerArray1 = tempCoveringSpinnerArray;
+        ArrayList<String> finalTempCoveringSpinnerArray2 = tempCoveringSpinnerArray;
         databaseButton.setOnClickListener(v->{
+
+
+            /*Toast.makeText(MainActivity.this, ""+ finalTempCoveringSpinnerArray1.size(), Toast.LENGTH_SHORT).show();
+            for(String i : finalTempCoveringSpinnerArray1){
+                Toast.makeText(MainActivity.this, i, Toast.LENGTH_SHORT).show();
+            }*/
+            if(finalTempCoveringSpinnerArray2.size()!=0){
+                for(String i : finalTempCoveringSpinnerArray2){
+                    coveringSpinnerArray.add(i);
+                }
+            } else{
+                coveringSpinnerArray.add("Test");
+            }
+
+
+            //Check if the app is connected
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
                     connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
@@ -97,6 +228,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     dataString.append(document.getData());
                                     dataString.append(", id=").append(document.getId());
                                 }
+                                //Start new activity, saving the project with DataLog, which is the database view
+                                //Copy this section to open the loading page
                                 openNewActivity(dataString.toString());
                             } else {
                                 Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
@@ -109,15 +242,76 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        /*Toast.makeText(MainActivity.this, "~~"+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+        for(String i : tempCoveringSpinnerArray){
+            Toast.makeText(MainActivity.this, "~~"+i, Toast.LENGTH_SHORT).show();
+        }*/
+
         //resultOutput = (TextView) findViewById(R.id.result_output);
 
         //getLastLocation();
+    }
+
+    public ArrayList<String> getCoveirngs(){
+        //Toast.makeText(MainActivity.this, "MaybE?????"+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<String> tempCoveringSpinnerArray = new ArrayList<>();
+
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
+            db.collection("coverings")
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        StringBuilder dataString = new StringBuilder();
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                dataString.append(document.getData());
+                            }
+                            //openNewActivity(dataString.toString());
+                            //Toast.makeText(MainActivity.this, dataString.toString(), Toast.LENGTH_SHORT).show();
+                            System.out.println(dataString);
+                            //{UV Rate=2.707452846, UV Fen=0.0003045083, name=Opaque}, id=0ELYwBTDJezJp1iT4JWJ{UV Rate=55.94852496, UV Fen=0.043617209, name=No film}, id=gU7LbC3LfFV0uKTHmdfq{UV Rate=26.48524698, UV Fen=0.00801709, name=Standard}, id=i6zYAC4L8O04l6Uad1Z6{UV Rate=46.48309932, UV Fen=0.035078273, name=Transparent}, id=jPQc0r6jo5isloaM4LE1
+                            String[] coveringNamesRaw = dataString.toString().split("name=");
+                            for(String i : coveringNamesRaw) {
+                                System.out.println(i);
+                            }
+                            System.out.println("!!!!!!!!!!!!!!!!!!!");
+                            String[] coveringNamesTrimmed = Arrays.copyOfRange(coveringNamesRaw, 1, coveringNamesRaw.length);
+
+                            for(String i : coveringNamesTrimmed) {
+                                System.out.println(i);
+                                //Toast.makeText(MainActivity.this, i, Toast.LENGTH_SHORT).show();
+                                String[] tempArray = i.split("\\}");
+                                //Toast.makeText(MainActivity.this, tempArray[0], Toast.LENGTH_SHORT).show();
+                                tempCoveringSpinnerArray.add(tempArray[0]);
+
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+                        }
+                        /*Toast.makeText(MainActivity.this, ""+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+                        for(String j : tempCoveringSpinnerArray){
+                            Toast.makeText(MainActivity.this, j, Toast.LENGTH_SHORT).show();
+                        }*/
+                    });
+        } else{
+            Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+        }
+        //Toast.makeText(MainActivity.this, "Okay, what's going on"+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+        return tempCoveringSpinnerArray;
     }
 
     public void openNewActivity(String dataString){
         Intent intent = new Intent(this, DataLog.class);
         intent.putExtra("data_string", dataString);
         intent.putExtra("username", username);
+        startActivity(intent);
+    }
+
+    public void openLoadActivity(String testMessage){
+        Intent intent = new Intent(this, LoadingPage.class);
+        intent.putExtra("test_message", testMessage);
         startActivity(intent);
     }
 
@@ -224,13 +418,50 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     public void onLocationChanged(Location location) {currentLocation = location;}
 
     @SuppressLint("StaticFieldLeak")
+    private class LoadSpinnerDataAsync extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        protected Void doInBackground(Void... voids) {
+            //This is where you'll do shit
+            goButton.setText("Weeeeeeeeee");
+            //Toast.makeText(MainActivity.this, "Async Baby!!!!!", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            goButton.setText("GO GO GO");
+        }
+
+        protected void onPreExecute() {
+
+            super.onPreExecute();
+
+            goButton.setText("I'm so confused");
+        }
+
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){spinnerSwitch(parent,pos,id);}
+        public void onNothingSelected(AdapterView<?> parent) {}
+    }
+
+    @SuppressLint("StaticFieldLeak")
     private class MyTask extends AsyncTask<Void, Void, Void> implements AdapterView.OnItemSelectedListener {
         //String result;
 
         @SuppressLint("SetTextI18n")
         @Override
         protected Void doInBackground(Void... voids) {
-            goButton.setText("Calculating...");
+            //.makeText(MainActivity.this, "What the actual fuck is wrong?", Toast.LENGTH_SHORT).show();
+            if(myTaskBehaviour==0){
+                //Toast.makeText(MainActivity.this, "God Let This Be IT.", Toast.LENGTH_SHORT).show();
+                myTaskBehaviour=1;
+            }
+            else {
+                goButton.setText("Calculating...");
+            }
             /*resultOutput.setText("");
             String daysOutput;
             if (daysToReachUVDose() > 300) {
@@ -239,6 +470,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 daysOutput = "Days required: " + daysToReachUVDose();
             }
             resultOutput.setText(daysOutput);*/
+            //Okay, I think the background stuff needs to happen here.
+
             return null;
         }
 
@@ -302,25 +535,33 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            goButton.setText("GO!");
+            //Toast.makeText(MainActivity.this, "Or even here?", Toast.LENGTH_SHORT).show();
+            if(myTaskBehaviour==0){
+                //Toast.makeText(MainActivity.this, "This Is Going To Be IT.", Toast.LENGTH_SHORT).show();
+            }
 
-            try {
-                if(Float.parseFloat(enterDegradation.getText().toString())<100&&Float.parseFloat(enterDegradation.getText().toString())>=0) {
-                    //Okay, this works but remember it's using UVFen, not just a UV dose.
-                    //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
-                    //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
-                    Project project = new Project();
+            else{
+                //Toast.makeText(MainActivity.this, "Do we get here?", Toast.LENGTH_SHORT).show();
+                goButton.setText("GO!");
 
-                    //Need to add error message if it fails to write to the database.
-                    //project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
-                    project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, username);
-                    //Toast.makeText(MainActivity.this, "Calculation Finished.\n" + resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
-                    Toast.makeText(MainActivity.this, "Calculation Finished.\nProject is being saved...", Toast.LENGTH_SHORT).show();
-                } else{
-                    Toast.makeText(MainActivity.this, "Degradation must be between 0 and 100%", Toast.LENGTH_SHORT).show();
+                try {
+                    if(Float.parseFloat(enterDegradation.getText().toString())<100&&Float.parseFloat(enterDegradation.getText().toString())>=0) {
+                        //Okay, this works but remember it's using UVFen, not just a UV dose.
+                        //So, I need to check if UVFen is constant in growing environments or find a way to get it from the dose
+                        //Seems like the later would be easy if I got a breakdown of dose by wavelength, but don't know if that's possible
+                        Project project = new Project();
+
+                        //Need to add error message if it fails to write to the database.
+                        //project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
+                        project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, username);
+                        //Toast.makeText(MainActivity.this, "Calculation Finished.\n" + resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Calculation Finished.\nProject is being saved...", Toast.LENGTH_SHORT).show();
+                    } else{
+                        Toast.makeText(MainActivity.this, "Degradation must be between 0 and 100%", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
                 }
-            } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -328,11 +569,31 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         protected void onPreExecute() {
 
             super.onPreExecute();
-            try {
-                Float.parseFloat(enterDegradation.getText().toString());
-            } catch (Exception e){
-                Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
+            if(myTaskBehaviour==0){
+                //Toast.makeText(MainActivity.this, "This Has To Be IT.", Toast.LENGTH_SHORT).show();
+                tempCoveringSpinnerArray.add("PlEASE");
+                //Toast.makeText(MainActivity.this, "For the love of god please"+tempCoveringSpinnerArray.size(), Toast.LENGTH_SHORT).show();
+                //getCoveirngs();
+                //I need to get to DoInBAckground, so this needs to go, but the other bits can't crash
                 cancel(true);
+                //Okay, we're just going to add dummy numbers and see what that does
+                /*
+                enterStartQuantity.setText("5");
+                enterUVDose.setText("5");
+                enterHours.setText("5");
+                enterGrowTemp.setText("5");
+                enterDegradation.setText("5");
+                coveringType = "Opaque";
+                pesticideType = "Fenitrothion";
+                uvFen = (float) 0.4563;*/
+            }
+            else {
+                try {
+                    Float.parseFloat(enterDegradation.getText().toString());
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
+                    cancel(true);
+                }
             }
         }
 

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_delete_project.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_loading_page.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
+      </map>
+    </option>
+  </component>
   <component name="NullableNotNullManager">
     <option name="myDefaultNullable" value="org.jetbrains.annotations.Nullable" />
     <option name="myDefaultNotNull" value="androidx.annotation.NonNull" />

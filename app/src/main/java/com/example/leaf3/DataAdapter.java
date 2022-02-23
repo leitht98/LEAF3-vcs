@@ -19,13 +19,17 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView textView;
 
+        //Add buttons to each project in the database to 'Update' and 'Delete'
         public ViewHolder(View view, String username) {
             super(view);
             textView = (TextView) view.findViewById(R.id.textView);
+            //I'm not sure why I added this
             if(textView.getText().equals("")) {
+                //Add listener to 'Update' button and call function to launch new activity
                 Button projectButton = (Button) view.findViewById(R.id.projectButton);
                 projectButton.setOnClickListener(v -> openNewActivity((String) textView.getText(), username, view));
 
+                //Add listener to 'Delete' button and call function to launch new activity
                 Button deleteButton = (Button) view.findViewById(R.id.deleteButton);
                 deleteButton.setOnClickListener(v -> openDeleteActivity((String) textView.getText(), username, view));
             }
@@ -33,6 +37,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
 
         public TextView getTextView() {return textView;}
 
+        //Launch UpdateProject activity
         public void openNewActivity(String dataString, String username, View view){
             Context context = view.getContext();
             Intent intent = new Intent(context, UpdateProject.class);
@@ -41,6 +46,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
             context.startActivity(intent);
         }
 
+        //Launch DeleteProject activity
         public void openDeleteActivity(String dataString, String username, View view){
             Context context = view.getContext();
             Intent intent = new Intent(context, DeleteProject.class);
@@ -59,6 +65,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
      * by RecyclerView.
      * @param username
      */
+    //Constructor
     public DataAdapter(String[] dataSet, String username) {
         localDataSet = dataSet;
         localUsername = username;

@@ -4,6 +4,7 @@
     <string name="covering_no_selection">Select a covering</string>
     <string name="covering">Covering</string>
 
+    <!--
     <string-array name="covering_array">
         <item>Transparent</item>
         <item>Opaque</item>
@@ -11,11 +12,13 @@
         <item>No film</item>
     </string-array>
 
+
     <string-array name="pesticides_array">
         <item>Fenitrothion</item>
     </string-array>
 
     <string name="result">Result</string>
+    -->
 
 
 </resources>

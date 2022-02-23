@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         if(coveringNamesString==""){
                             getDataButton.setText("Press Again");
                         }else {
-                            getDataButton.setText(coveringNamesString);
+                            getDataButton.setText("GET DATA");
                             coveringSpinnerArray = tempCoveringSpinnerArray;
                             ArrayAdapter<String> coveringStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
                             coveringStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
@@ -222,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     }
                 });
             });
+
 
         });
 
@@ -387,11 +388,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         startActivity(intent);
     }
 
+    /*
     public void openLoadActivity(String testMessage){
         Intent intent = new Intent(this, LoadingPage.class);
         intent.putExtra("test_message", testMessage);
         startActivity(intent);
-    }
+    }*/
 
 
     //Oh they're here too that explains it.
@@ -406,18 +408,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
 
     //I think this will need changing?
+    //This is the problem
+    //Yeah, it's the order they're in that's wrong
     @SuppressLint("NonConstantResourceId")
     private void spinnerSwitch(AdapterView<?> parent, int pos, long id){
         switch (parent.getId()) {
             case R.id.covering_spinner:
                 parent.getItemAtPosition(pos);
                 switch ((int) id) {
-                    case 0: //Transparent
+                    case 3: //Transparent
                         uvFen = (float) 0.035078273;
                         uvRate = (float) 46.48309932;
                         coveringType = "Transparent";
                         break;
-                    case 1: //Opaque
+                    case 0: //Opaque
                         uvFen = (float) 0.0003045083;
                         uvRate = (float) 2.707452846;
                         coveringType = "Opaque";
@@ -427,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         uvRate = (float) 26.48524698;
                         coveringType = "Standard";
                         break;
-                    case 3: //No film
+                    case 1: //No film
                         uvFen = (float) 0.043617209;
                         uvRate = (float) 55.94852496;
                         coveringType = "No film";

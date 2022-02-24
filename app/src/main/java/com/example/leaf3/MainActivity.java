@@ -28,8 +28,11 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
@@ -53,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     ArrayList<String> tempCoveringSpinnerArray = new ArrayList<>();
     ArrayList<String> coveringSpinnerArray = new ArrayList<>();
+    ArrayList<String> coveringSpinnerArrayUsingFutures = new ArrayList<>();
+
+    Spinner coveringSpinner;
 
     String coveringType, pesticideType;
 
@@ -65,6 +71,39 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        //Run the callable here.
+        //Toast.makeText(MainActivity.this, "1", Toast.LENGTH_SHORT).show();
+        //Spinner coveringSpinner = findViewById(R.id.covering_spinner);
+        coveringSpinner = findViewById(R.id.covering_spinner);
+        coveringSpinner.setOnItemSelectedListener(this);
+        ExecutorService coveringsService = Executors.newSingleThreadExecutor();
+        Future<ArrayList<String>> future = coveringsService.submit(new getCoveringsAsFuture());
+
+        //Stuff to do in background - Fucking nothing!
+
+        try {
+            //Toast.makeText(MainActivity.this, "2", Toast.LENGTH_SHORT).show();
+            coveringSpinnerArrayUsingFutures = future.get(); //Blocking???
+            ArrayAdapter<String> coveringStringAdapterFutures = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArrayUsingFutures);
+            coveringStringAdapterFutures.setDropDownViewResource(android.R.layout.simple_spinner_item);
+            coveringSpinner.setAdapter(coveringStringAdapterFutures);
+            coveringSpinner.setOnItemSelectedListener(this);
+            //Toast.makeText(MainActivity.this, "3", Toast.LENGTH_SHORT).show();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //Toast.makeText(MainActivity.this, "4", Toast.LENGTH_SHORT).show();
+        ArrayAdapter<String> coveringStringAdapterFutures = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArrayUsingFutures);
+        coveringStringAdapterFutures.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        coveringSpinner.setAdapter(coveringStringAdapterFutures);
+        coveringSpinner.setOnItemSelectedListener(this);
+        //Toast.makeText(MainActivity.this, "5", Toast.LENGTH_SHORT).show();
+
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
 
         //Array to populate with coverings, change to store Coverings, not Strings
         //ArrayList<String> coveringSpinnerArray = new ArrayList<>();
@@ -88,18 +127,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 coveringSpinnerArray.add(i);
             }
         } else{
-            coveringSpinnerArray.add("Test");
+            coveringSpinnerArray.add("Please press Get Data Button");
         }
 
         //Putting pesticide/ covering data into spinners once you've got it - yet to figure that part out
-        Spinner coveringSpinner = findViewById(R.id.covering_spinner);
-        ArrayAdapter<String> coveringStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
-        coveringStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
-        coveringSpinner.setAdapter(coveringStringAdapter);
+        //Spinner coveringSpinner = findViewById(R.id.covering_spinner);
+        //ArrayAdapter<String> coveringStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
+        //coveringStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        //coveringSpinner.setAdapter(coveringStringAdapter);
         coveringSpinner.setOnItemSelectedListener(this);
 
         ArrayList<String> pesticideSpinnerArray = new ArrayList<>();
         pesticideSpinnerArray.add("Fenitrothion");
+        pesticideSpinnerArray.add("Desperation");
 
         Spinner pesticideSpinner = findViewById(R.id.pesticide_spinner);
         ArrayAdapter<String> pesticideStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, pesticideSpinnerArray);
@@ -126,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             ExecutorService service = Executors.newSingleThreadExecutor();
             service.execute(() -> {
                 //onPre
+                //I don't actually think I need this?
                 runOnUiThread(() -> {
                     //
                     System.out.println("This is pre");
@@ -293,14 +334,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         ArrayList<String> finalTempCoveringSpinnerArray2 = tempCoveringSpinnerArray;
         databaseButton.setOnClickListener(v->{
 
-            if(finalTempCoveringSpinnerArray2.size()!=0){
-                for(String i : finalTempCoveringSpinnerArray2){
-                    coveringSpinnerArray.add(i);
-                }
-            } else{
-                coveringSpinnerArray.add("Test");
-            }
-
 
             //Check if the app is connected
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -404,7 +437,53 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     public void onLocationChanged(Location location) {currentLocation = location;}
 
 
+    class getCoveringsAsFuture implements Callable<ArrayList<String>>{
 
+        @Override
+        public ArrayList<String> call() throws Exception {
+            ArrayList<String> coveringSpinnerArrayUsingFuturesTemp = new ArrayList<>();
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
+                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
+                db.collection("coverings")
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            StringBuilder dataString = new StringBuilder();
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                    dataString.append(document.getData());
+                                }
+                                System.out.println("Raw data string" + dataString);
+                                String[] coveringNamesRaw = dataString.toString().split("name=");
+                                String[] coveringNamesTrimmed = Arrays.copyOfRange(coveringNamesRaw, 1, coveringNamesRaw.length);
+
+                                for(String i : coveringNamesTrimmed) {
+                                    System.out.println("Trimmed names: "+i);
+                                    String[] tempArray = i.split("\\}");
+                                    boolean newCovering = true;
+                                    for (String j: coveringSpinnerArrayUsingFuturesTemp){
+                                        if(j.equals(tempArray[0])){
+                                            newCovering = false;
+                                        }
+                                    }
+                                    if(newCovering) {
+                                        coveringSpinnerArrayUsingFuturesTemp.add(tempArray[0]);
+                                    }
+                                }
+                            } else {
+                                System.out.println("Fail at check 1");
+                            }
+                        });
+            } else{
+                System.out.println("Fail at check 2");
+            }
+            return coveringSpinnerArrayUsingFuturesTemp;
+        }
+        //Trying to get spinnerSwitch to work, I can't imagine this would work. It doesn't
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id){spinnerSwitch(parent,pos,id);}
+        public void onNothingSelected(AdapterView<?> parent) {}
+    }
 
 
     //I think this will need changing?
@@ -412,8 +491,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     //Yeah, it's the order they're in that's wrong
     @SuppressLint("NonConstantResourceId")
     private void spinnerSwitch(AdapterView<?> parent, int pos, long id){
+        Toast.makeText(MainActivity.this, "Anything??", Toast.LENGTH_SHORT).show();
         switch (parent.getId()) {
             case R.id.covering_spinner:
+                Toast.makeText(MainActivity.this, "Spinning! coverings", Toast.LENGTH_SHORT).show();
                 parent.getItemAtPosition(pos);
                 switch ((int) id) {
                     case 3: //Transparent
@@ -442,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 }
                 break;
             case R.id.pesticide_spinner:
+                Toast.makeText(MainActivity.this, "Spinning! pesticides", Toast.LENGTH_SHORT).show();
                 parent.getItemAtPosition(pos);
                 switch ((int) id) {
                     case 0: //Fenitrothion

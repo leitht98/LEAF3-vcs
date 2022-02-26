@@ -15,6 +15,7 @@ import static java.lang.Math.log;
 public class Project {
     float currentQuantityBestOne, currentQuantityCombinedBreakdown, currentQuantityMidPoint, currentQuantityTemp, currentQuantityTempThenUV;
     float currentQuantityUV, currentQuantityUVThenTemp, currentQuantityWorstOne, degradationRequired, growHours, uvDose, startQuantity, uvFen, growTemp;
+    float regressionParam1, regressionParam2;
     String pesticideType, projectID, coveringType, formattedDate;
     //String resultOutput;
     //int daysNeeded;
@@ -24,7 +25,7 @@ public class Project {
         db = FirebaseFirestore.getInstance();
     }
 
-    public void saveToDatabase(float enteredStartQuantity, float enteredUVDose, float enteredHours, float enteredGrowTemp, float enteredDegradation, String enteredCovering, String enteredPesticide, float enteredUVFen, String username){
+    public void saveToDatabase(float enteredStartQuantity, float enteredUVDose, float enteredHours, float enteredGrowTemp, float enteredDegradation, String enteredCovering, String enteredPesticide, float enteredUVFen, float pesticideRP1, float pesticideRP2, String username){
         growTemp = enteredGrowTemp;
         coveringType = enteredCovering;
         //latitude = enteredLatitude;
@@ -36,6 +37,8 @@ public class Project {
         degradationRequired = enteredDegradation;
         growHours = enteredHours;
         uvDose = enteredUVDose;
+        regressionParam1 = pesticideRP1;
+        regressionParam2 = pesticideRP2;
 
         float testRemainingAfterUV = remainingPesticideUV(enteredStartQuantity, enteredUVDose);
         float testRemainingAfterTemp = remainingPesticideTemp(enteredStartQuantity, enteredHours);
@@ -111,6 +114,8 @@ public class Project {
                 case "start date": formattedDate = labelDataPair[1]; break;
                 case "start quantity": startQuantity = Float.parseFloat(labelDataPair[1]); break;
                 //case "days needed": daysNeeded = Integer.parseInt(labelDataPair[1]); break;
+                case "regression parameter 1": regressionParam1 = Float.parseFloat(labelDataPair[1]); break;
+                case "regression parameter 2": regressionParam2 = Float.parseFloat(labelDataPair[1]); break;
                 default: break;
             }
         }
@@ -151,6 +156,9 @@ public class Project {
 
         user.put("uv_fen", uvFen);
 
+        user.put("regression parameter 1", regressionParam1);
+        user.put("regression parameter 2", regressionParam2);
+
         //Based only on UV breakdown, not temperature yet
         //user.put("days_needed", daysNeeded);
 
@@ -167,14 +175,15 @@ public class Project {
         return startConcentration - (fractionPhotodegraded*startConcentration);
     }
 
+    //This will need changing, pass RPs to the class, don't find them here
     private float volatilisationRate(){
         float tempInKelvin = growTemp + (float) 273.15;
-        float regressionParam1 = 0;
-        float regressionParam2 = 0;
-        if(pesticideType.equals("Fenitrothion")){
-            regressionParam1 = (float) 6.3362;
-            regressionParam2 = (float) 3197.8;
-        }
+        //float regressionParam1 = 0;
+        //float regressionParam2 = 0;
+        //if(pesticideType.equals("Fenitrothion")){
+            //regressionParam1 = (float) 6.3362;
+            //regressionParam2 = (float) 3197.8;
+        //}
         float vapourPressure = (float) Math.pow(10,(regressionParam1 - (regressionParam2/tempInKelvin)));
         float vapourPressure1mmHg = (float) vapourPressure * (float) 133.322;
         float lnVP = (float) log(vapourPressure1mmHg);

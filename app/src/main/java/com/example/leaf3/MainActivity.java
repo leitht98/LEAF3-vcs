@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
     //Hardcoded username to store projects in individual databases, eventually this will be entered by the user
-    String username = "Paola";
+    String username = "Tom";
     //To store the project location
     Location currentLocation = new Location("");
     //protected String latitude,longitude;
@@ -52,31 +52,30 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
     private Button goButton, getDataButton;
     float uvRate = (float) 1;
+    float rParam1 = (float) 1;
+    float rParam2 = (float) 1;
 
     ArrayList<String> tempCoveringSpinnerArray = new ArrayList<>();
     ArrayList<String> coveringSpinnerArray = new ArrayList<>();
-    ArrayList<String> coveringSpinnerArrayUsingFutures = new ArrayList<>();
+    ArrayList<String> tempPesticideSpinnerArray = new ArrayList<>();
+    ArrayList<String> pesticideSpinnerArray = new ArrayList<>();
 
     Spinner coveringSpinner;
+    Spinner pesticideSpinner;
 
     String coveringType, pesticideType;
 
     ArrayList<Covering> coveringsObjectArray = new ArrayList<>();
+    ArrayList<Pesticide> pesticidesObjectArray = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //You should probably do the loading page here?
-
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        //Run the callable here.
-        //Toast.makeText(MainActivity.this, "1", Toast.LENGTH_SHORT).show();
-        //Spinner coveringSpinner = findViewById(R.id.covering_spinner);
         coveringSpinner = findViewById(R.id.covering_spinner);
+        pesticideSpinner = findViewById(R.id.pesticide_spinner);
         //coveringSpinner.setOnItemSelectedListener(this);
         ExecutorService coveringsService = Executors.newSingleThreadExecutor();
         Future<ArrayList<String>> future = coveringsService.submit(new getCoveringsAsFuture());
@@ -84,15 +83,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         //Stuff to do in background - Fucking nothing!
 
         try {
-            //Toast.makeText(MainActivity.this, "2", Toast.LENGTH_SHORT).show();
-            /*coveringSpinnerArrayUsingFutures = future.get(); //Blocking???
-            ArrayAdapter<String> coveringStringAdapterFutures = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArrayUsingFutures);
-            coveringStringAdapterFutures.setDropDownViewResource(android.R.layout.simple_spinner_item);
-            coveringSpinner.setAdapter(coveringStringAdapterFutures);
-            //This must be the issue but no matter where I put it it still doesn't work.
-            coveringSpinner.setOnItemSelectedListener(this);*/
-
-
             //Okay, this is literally exactly the same as it is when you click the button, why doesn't it work here??
             coveringSpinnerArray = future.get();
             ArrayAdapter<String> coveringStringAdapterTemp = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
@@ -100,87 +90,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             coveringSpinner.setAdapter(coveringStringAdapterTemp);
             //Nope. Once again. Fucking hell!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             coveringSpinner.setOnItemSelectedListener(MainActivity.this);
-
-            //This doesn't work either????
-            /*coveringSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    switch (i) {
-                        case 3: //Transparent
-                            uvFen = (float) 0.035078273;
-                            uvRate = (float) 46.48309932;
-                            coveringType = "Transparent";
-                            break;
-                        case 0: //Opaque
-                            uvFen = (float) 0.0003045083;
-                            uvRate = (float) 2.707452846;
-                            coveringType = "Opaque";
-                            break;
-                        case 2: //Standard
-                            uvFen = (float) 0.00801709;
-                            uvRate = (float) 26.48524698;
-                            coveringType = "Standard";
-                            break;
-                        case 1: //No film
-                            uvFen = (float) 0.043617209;
-                            uvRate = (float) 55.94852496;
-                            coveringType = "No film";
-                            break;
-                        default:
-                            Toast.makeText(MainActivity.this, "Error fetching covering type.", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                }
-            });*/
-
-            //Toast.makeText(MainActivity.this, "3", Toast.LENGTH_SHORT).show();
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //Toast.makeText(MainActivity.this, "4", Toast.LENGTH_SHORT).show();
-        /*ArrayAdapter<String> coveringStringAdapterFutures = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArrayUsingFutures);
-        coveringStringAdapterFutures.setDropDownViewResource(android.R.layout.simple_spinner_item);
-        coveringSpinner.setAdapter(coveringStringAdapterFutures);
-        coveringSpinner.setOnItemSelectedListener(this);*/
-        //Toast.makeText(MainActivity.this, "5", Toast.LENGTH_SHORT).show();
 
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-
-        //tempCoveringSpinnerArray = new ArrayList<>();
-
-        /*if(tempCoveringSpinnerArray.size()!=0){
-            for(String i : tempCoveringSpinnerArray){
-                coveringSpinnerArray.add(i);
-            }
-        } else{
-            coveringSpinnerArray.add("Please press Get Data Button");
-        }*/
-
-        //Putting pesticide/ covering data into spinners once you've got it - yet to figure that part out
-        //Spinner coveringSpinner = findViewById(R.id.covering_spinner);
-        //ArrayAdapter<String> coveringStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
-        //coveringStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
-        //coveringSpinner.setAdapter(coveringStringAdapter);
-        //coveringSpinner.setOnItemSelectedListener(this);
-
-        ArrayList<String> pesticideSpinnerArray = new ArrayList<>();
-        pesticideSpinnerArray.add("Fenitrothion");
-        //pesticideSpinnerArray.add("Desperation");
-
-        Spinner pesticideSpinner = findViewById(R.id.pesticide_spinner);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        pesticideSpinnerArray = new ArrayList<>();
+        //pesticideSpinnerArray.add("Fenitrothion");
         ArrayAdapter<String> pesticideStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, pesticideSpinnerArray);
         pesticideStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         pesticideSpinner.setAdapter(pesticideStringAdapter);
         pesticideSpinner.setOnItemSelectedListener(this);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         //Adding all the other items
         enterDegradation = findViewById(R.id.enterDegradation);
@@ -192,14 +115,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         goButton = findViewById(R.id.goButton);
         Button databaseButton = findViewById(R.id.databaseButton);
 
-        //This works, clearly pulling the data correctly because it's showing up, find code in SpareCode if needed
-
         //Ideally, I'll be able to get rid of this.
         getDataButton.setOnClickListener(v->{
-            //openLoadActivity("A loading screen!");
-            //Move code from LoadingPage here?
-
-
             ExecutorService service = Executors.newSingleThreadExecutor();
             service.execute(() -> {
                 //onPre
@@ -214,8 +131,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 System.out.println("This is background");
                 System.out.println(">>>"+tempCoveringSpinnerArray.size());
 
-                //FirebaseFirestore db = FirebaseFirestore.getInstance();
-
                 ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
                 if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
                         connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
@@ -228,24 +143,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                         dataString.append(document.getData());
                                     }
                                     System.out.println("Raw data string" + dataString);
-                                    String[] coveringNamesRaw = dataString.toString().split("name=");
-                                    String[] coveringNamesTrimmed = Arrays.copyOfRange(coveringNamesRaw, 1, coveringNamesRaw.length);
 
-                                    for(String i : coveringNamesTrimmed) {
-                                        System.out.println("Trimmed names: "+i);
-                                        String[] tempArray = i.split("\\}");
-                                        //Okay now we're getting somewhere! At the very least I can get it to load the data, you just have to press the button twice
-                                        //Now need to get this data back to the spinner
-                                        //Or copy this all into MainActivity instead of having a loading screen
-                                        //What happens if I just run the service twice?
+                                    String dataStringTrim = dataString.toString().substring(1,dataString.length()-1);
+                                    System.out.println("Raw and trimmed: "+dataStringTrim);
+                                    String[] coveringsData = dataStringTrim.toString().split("\\}\\{");
+                                    for(String i : coveringsData){
+                                        System.out.println("individual data: "+i);
+                                        String[] coveringValues = i.split(",");
+                                        System.out.println("UV Rate: "+coveringValues[0].split("=")[1]+"\nUV Fen: "+coveringValues[1].split("=")[1]+"\nName: "+coveringValues[2].split("=")[1]);
+                                        Float rate = Float.parseFloat(coveringValues[0].split("=")[1]);
+                                        Float fen = Float.parseFloat(coveringValues[1].split("=")[1]);
+                                        String name = coveringValues[2].split("=")[1];
                                         boolean newCovering = true;
                                         for (String j: tempCoveringSpinnerArray){
-                                            if(j.equals(tempArray[0])){
+                                            if(j.equals(name)){
                                                 newCovering = false;
                                             }
                                         }
                                         if(newCovering) {
-                                            tempCoveringSpinnerArray.add(tempArray[0]);
+                                            tempCoveringSpinnerArray.add(name);
+                                            coveringsObjectArray.add(new Covering(name,fen,rate));
                                         }
                                     }
                                     for(String i:tempCoveringSpinnerArray) {
@@ -258,19 +175,55 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     System.out.println("Fail at check 1");
                                 }
                             });
+
+                    db.collection("pesticides")
+                            .get()
+                            .addOnCompleteListener(task -> {
+                                StringBuilder dataString = new StringBuilder();
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                        dataString.append(document.getData());
+                                    }
+                                    System.out.println("Raw data string" + dataString);
+
+                                    String dataStringTrim = dataString.toString().substring(1,dataString.length()-1);
+                                    System.out.println("Raw and trimmed: "+dataStringTrim);
+                                    String[] coveringsData = dataStringTrim.toString().split("\\}\\{");
+                                    for(String i : coveringsData){
+                                        System.out.println("individual data: "+i);
+                                        String[] coveringValues = i.split(",");
+                                        System.out.println("Name: "+coveringValues[0].split("=")[1]+"\nRP1: "+coveringValues[1].split("=")[1]+"\nRP2: "+coveringValues[2].split("=")[1]);
+                                        String name = coveringValues[0].split("=")[1];
+                                        Float rp1 = Float.parseFloat(coveringValues[1].split("=")[1]);
+                                        Float rp2 = Float.parseFloat(coveringValues[2].split("=")[1]);
+                                        boolean newPesticide = true;
+                                        for (String j: tempPesticideSpinnerArray){
+                                            if(j.equals(name)){
+                                                newPesticide = false;
+                                            }
+                                        }
+                                        if(newPesticide) {
+                                            tempPesticideSpinnerArray.add(name);
+                                            pesticidesObjectArray.add(new Pesticide(name,rp1,rp2));
+                                        }
+                                    }
+                                    //This never seems to run?? Or having this here stops the whole section running, WHAT???
+                                    //Having both also makes it too fast? So it doesn't run this section unless it knows it'll close??
+                                    service.shutdown();
+                                } else {
+                                    System.out.println("Fail at check 1");
+                                }
+                            });
+
+
                     //This shuts it down too fast
                     service.shutdown();
                     //The if just breaks it. Why do I need this to allow the other section to run?
-                    if(tempCoveringSpinnerArray.size()==5) {
-                        service.shutdown();
-                    }
+                    //if(tempCoveringSpinnerArray.size()==5) {
+                        //service.shutdown();
+                    //}
                 } else{
                     System.out.println("Fail at check 2");
-                }
-
-                System.out.println("!>>>"+tempCoveringSpinnerArray.size());
-                for(String i:tempCoveringSpinnerArray) {
-                    System.out.println("IT??? "+i);
                 }
 
                 //onPost
@@ -289,10 +242,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                             getDataButton.setText("Press Again");
                         }else {
                             getDataButton.setText("GET DATA");
+
                             coveringSpinnerArray = tempCoveringSpinnerArray;
                             ArrayAdapter<String> coveringStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
                             coveringStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
                             coveringSpinner.setAdapter(coveringStringAdapterTemp);
+
+                            pesticideSpinnerArray = tempPesticideSpinnerArray;
+                            ArrayAdapter<String> pesticideStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, pesticideSpinnerArray);
+                            pesticideStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
+                            pesticideSpinner.setAdapter(pesticideStringAdapterTemp);
                         }
 
                     } catch(InterruptedException e){
@@ -311,7 +270,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
                 //This is where you call MyTask, the Async thing, so just do another one for getting covering data
                 //new MyTask().execute();
-
 
                 //This is where you try to add an ExecutorService to replace MyTask.
                 //Seems to work? Feel like I need the last two functions that were at the end of MyTask but apparently not
@@ -349,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     Project project = new Project();
                                     //Need to add error message if it fails to write to the database.
                                     //project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
-                                    project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, username);
+                                    project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, rParam1, rParam2, username);
                                     //Toast.makeText(MainActivity.this, "Calculation Finished.\n" + resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
                                     Toast.makeText(MainActivity.this, "Calculation Finished.\nProject is being saved...", Toast.LENGTH_SHORT).show();
                                 } else {
@@ -372,8 +330,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             }
         });
 
-        //ArrayList<String> finalTempCoveringSpinnerArray1 = tempCoveringSpinnerArray;
-        //ArrayList<String> finalTempCoveringSpinnerArray2 = tempCoveringSpinnerArray;
         databaseButton.setOnClickListener(v->{
 
 
@@ -462,32 +418,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                         coveringSpinnerArrayUsingFuturesTemp.add(name);
                                         coveringsObjectArray.add(new Covering(name,fen,rate));
                                     }
-                                    /*for (String j : coveringValues){
-                                        System.out.println("    individual data: "+j);
-                                        System.out.println("        individual data: "+j.split("=")[1]);
-                                        try {
-                                            System.out.println("        individual data: " + Float.parseFloat(j.split("=")[1]) + 10000);
-                                        } catch(Exception e){
-                                            System.out.println("        individual data NAME: " + j.split("=")[1]);
-                                        }
-                                    }*/
                                 }
-
-                                /*
-                                for(String i : coveringNamesTrimmed) {
-                                    System.out.println("Trimmed names: "+i);
-                                    String[] tempArray = i.split("\\}");
-                                    boolean newCovering = true;
-                                    for (String j: coveringSpinnerArrayUsingFuturesTemp){
-                                        if(j.equals(tempArray[0])){
-                                            newCovering = false;
-                                        }
-                                    }
-                                    if(newCovering) {
-                                        coveringSpinnerArrayUsingFuturesTemp.add(tempArray[0]);
-                                        coveringsObjectArray.add(new Covering(tempArray[0],1,2));
-                                    }
-                                }*/
                             } else {
                                 System.out.println("Fail at check 1");
                             }
@@ -518,37 +449,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         break;
                     }
                 }
-                //Toast.makeText(MainActivity.this, "Spinning! coverings", Toast.LENGTH_SHORT).show();
-                /*parent.getItemAtPosition(pos);
-                switch ((int) id) {
-                    case 3: //Transparent
-                        uvFen = (float) 0.035078273;
-                        uvRate = (float) 46.48309932;
-                        coveringType = "Transparent";
-                        break;
-                    case 0: //Opaque
-                        uvFen = (float) 0.0003045083;
-                        uvRate = (float) 2.707452846;
-                        coveringType = "Opaque";
-                        break;
-                    case 2: //Standard
-                        uvFen = (float) 0.00801709;
-                        uvRate = (float) 26.48524698;
-                        coveringType = "Standard";
-                        break;
-                    case 1: //No film
-                        uvFen = (float) 0.043617209;
-                        uvRate = (float) 55.94852496;
-                        coveringType = "No film";
-                        break;
-                    default:
-                        Toast.makeText(MainActivity.this, "Error fetching covering type.", Toast.LENGTH_SHORT).show();
-                        break;
-                }*/
                 break;
             case R.id.pesticide_spinner:
                 //Toast.makeText(MainActivity.this, "Spinning! pesticides", Toast.LENGTH_SHORT).show();
-                parent.getItemAtPosition(pos);
+                /*parent.getItemAtPosition(pos);
                 switch ((int) id) {
                     case 0: //Fenitrothion
                         pesticideType = "Fenitrothion";
@@ -558,6 +462,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     default:
                         Toast.makeText(MainActivity.this, "Error fetching pesticide.", Toast.LENGTH_SHORT).show();
                         break;
+                }*/
+                for (Pesticide i:pesticidesObjectArray){
+                    if (i.getName().equals(pesticideSpinner.getSelectedItem().toString())){
+                        pesticideType = i.getName();
+                        rParam1 = i.getRParam1();
+                        rParam2 = i.getRParam2();
+                        //Toast.makeText(MainActivity.this,pesticideType,Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MainActivity.this,"RP1: "+rParam1,Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MainActivity.this,"RP2: "+rParam2,Toast.LENGTH_SHORT).show();
+                        break;
+                    }
                 }
                 break;
         }

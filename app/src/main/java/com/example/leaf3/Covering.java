@@ -1,11 +1,13 @@
 package com.example.leaf3;
 
+import java.math.BigDecimal;
+
 //Class to store Covering data
 public class Covering {
     String coveringName;
-    float uvFen, uvRate;
+    BigDecimal uvFen, uvRate;
 
-    public Covering(String name, float fen, float rate){
+    public Covering(String name, BigDecimal fen, BigDecimal rate){
         coveringName = name;
         //These may be replaced with other variables later, uvFen and Rate aren't that easy to get
         uvFen = fen;
@@ -17,11 +19,11 @@ public class Covering {
         return coveringName;
     }
 
-    public float getUVFen() {
+    public BigDecimal getUVFen() {
         return uvFen;
     }
 
-    public float getUVRate() {
+    public BigDecimal getUVRate() {
         return uvRate;
     }
 }

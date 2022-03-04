@@ -1,10 +1,12 @@
 package com.example.leaf3;
 
+import java.math.BigDecimal;
+
 public class Pesticide {
     String pesticideName;
-    float rParam1, rParam2;
+    BigDecimal rParam1, rParam2;
 
-    public Pesticide(String name, float rp1, float rp2){
+    public Pesticide(String name, BigDecimal rp1, BigDecimal rp2){
         pesticideName = name;
         rParam1 = rp1;
         rParam2 = rp2;
@@ -14,11 +16,11 @@ public class Pesticide {
         return pesticideName;
     }
 
-    public float getRParam1(){
+    public BigDecimal getRParam1(){
         return rParam1;
     }
 
-    public float getRParam2(){
+    public BigDecimal getRParam2(){
         return rParam2;
     }
 }

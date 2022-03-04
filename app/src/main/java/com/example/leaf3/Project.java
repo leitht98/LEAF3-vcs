@@ -2,6 +2,7 @@ package com.example.leaf3;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,10 +13,12 @@ import java.util.Map;
 import static java.lang.Math.E;
 import static java.lang.Math.log;
 
+import android.widget.Toast;
+
 public class Project {
-    float currentQuantityBestOne, currentQuantityCombinedBreakdown, currentQuantityMidPoint, currentQuantityTemp, currentQuantityTempThenUV;
-    float currentQuantityUV, currentQuantityUVThenTemp, currentQuantityWorstOne, degradationRequired, growHours, uvDose, startQuantity, uvFen, growTemp;
-    float regressionParam1, regressionParam2;
+    BigDecimal currentQuantityBestOne, currentQuantityCombinedBreakdown, currentQuantityMidPoint, currentQuantityTemp, currentQuantityTempThenUV;
+    BigDecimal currentQuantityUV, currentQuantityUVThenTemp, currentQuantityWorstOne, degradationRequired, growHours, uvDose, startQuantity, uvFen, uvRate, growTemp;
+    BigDecimal regressionParam1, regressionParam2;
     String pesticideType, projectID, coveringType, formattedDate;
     //String resultOutput;
     //int daysNeeded;
@@ -25,13 +28,14 @@ public class Project {
         db = FirebaseFirestore.getInstance();
     }
 
-    public void saveToDatabase(float enteredStartQuantity, float enteredUVDose, float enteredHours, float enteredGrowTemp, float enteredDegradation, String enteredCovering, String enteredPesticide, float enteredUVFen, float pesticideRP1, float pesticideRP2, String username){
+    public void saveToDatabase(BigDecimal enteredStartQuantity, BigDecimal enteredUVDose, BigDecimal enteredHours, BigDecimal enteredGrowTemp, BigDecimal enteredDegradation, String enteredCovering, String enteredPesticide, BigDecimal enteredUVFen, BigDecimal enteredUVRate, BigDecimal pesticideRP1, BigDecimal pesticideRP2, String username){
         growTemp = enteredGrowTemp;
         coveringType = enteredCovering;
         //latitude = enteredLatitude;
         //longitude = enteredLongitude;
         pesticideType = enteredPesticide;
         uvFen = enteredUVFen;
+        uvRate = enteredUVRate;
         //resultOutput = enteredResultOutput;
         startQuantity = enteredStartQuantity;
         degradationRequired = enteredDegradation;
@@ -40,19 +44,20 @@ public class Project {
         regressionParam1 = pesticideRP1;
         regressionParam2 = pesticideRP2;
 
-        float testRemainingAfterUV = remainingPesticideUV(enteredStartQuantity, enteredUVDose);
-        float testRemainingAfterTemp = remainingPesticideTemp(enteredStartQuantity, enteredHours);
+        BigDecimal testRemainingAfterUV = remainingPesticideUV(enteredStartQuantity, enteredUVDose);
+        BigDecimal testRemainingAfterTemp = remainingPesticideTemp(enteredStartQuantity, enteredHours);
 
-        currentQuantityUV = Math.max(0, testRemainingAfterUV);
-        currentQuantityTemp = Math.max(0, testRemainingAfterTemp);
+        currentQuantityUV = testRemainingAfterUV.max(BigDecimal.valueOf(0));
+        currentQuantityTemp = testRemainingAfterTemp.max(BigDecimal.valueOf(0));
 
         //Guesses as to how to combine the two breakdown rates:
-        currentQuantityBestOne = Math.max(0, Math.min(testRemainingAfterUV, testRemainingAfterTemp));
-        currentQuantityWorstOne = Math.max(0, Math.max(testRemainingAfterUV, testRemainingAfterTemp));
-        currentQuantityMidPoint = Math.max(0, (testRemainingAfterUV + testRemainingAfterTemp) / 2);
-        currentQuantityCombinedBreakdown = Math.max(0, testRemainingAfterUV - (enteredStartQuantity - testRemainingAfterTemp));
-        currentQuantityUVThenTemp = Math.max(0, remainingPesticideTemp(testRemainingAfterUV, enteredHours));
-        currentQuantityTempThenUV = Math.max(0, remainingPesticideUV(testRemainingAfterTemp, enteredUVDose));
+        currentQuantityBestOne = BigDecimal.valueOf(0).max(testRemainingAfterUV.min(testRemainingAfterTemp));
+        currentQuantityWorstOne = BigDecimal.valueOf(0).max(testRemainingAfterUV.max(testRemainingAfterTemp));
+        currentQuantityMidPoint = BigDecimal.valueOf(0).max((testRemainingAfterUV.add(testRemainingAfterTemp)).divide(BigDecimal.valueOf(2)));
+        currentQuantityCombinedBreakdown = BigDecimal.valueOf(0).max(testRemainingAfterUV.subtract(enteredStartQuantity.subtract(testRemainingAfterTemp)));
+        currentQuantityUVThenTemp = BigDecimal.valueOf(0).max(remainingPesticideTemp(testRemainingAfterUV, enteredHours));
+        currentQuantityTempThenUV = BigDecimal.valueOf(0).max(remainingPesticideUV(testRemainingAfterTemp, enteredUVDose));
+
 
         Date c = Calendar.getInstance().getTime();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -66,21 +71,21 @@ public class Project {
                 .add(user);
     }
 
-    public void updateProjectData(float enteredHours,float enteredUVDose, String username){
-        growHours = growHours + enteredHours;
-        uvDose = uvDose + enteredUVDose;
+    public void updateProjectData(BigDecimal enteredHours,BigDecimal enteredUVDose, String username){
+        growHours = growHours.add(enteredHours);
+        uvDose = uvDose.add(enteredUVDose);
 
-        currentQuantityUV = Math.max(0,remainingPesticideUV(currentQuantityUV,enteredUVDose));
-        currentQuantityTemp = Math.max(0,remainingPesticideTemp(currentQuantityTemp,enteredHours));
+        currentQuantityUV = remainingPesticideUV(currentQuantityUV,enteredUVDose).max(BigDecimal.valueOf(0));
+        currentQuantityTemp = remainingPesticideTemp(currentQuantityTemp,enteredHours).max(BigDecimal.valueOf(0));
 
         //Guesses as to how to combine the two breakdown rates:
-        currentQuantityBestOne = Math.max(0,Math.min(remainingPesticideUV(currentQuantityBestOne,enteredUVDose),remainingPesticideTemp(currentQuantityBestOne,enteredHours)));
-        currentQuantityWorstOne = Math.max(0,Math.max(remainingPesticideUV(currentQuantityWorstOne,enteredUVDose),remainingPesticideTemp(currentQuantityWorstOne,enteredHours)));
-        //!!! Doesn't match what it used to say but I think this is actually right.
-        currentQuantityMidPoint = Math.max(0,(remainingPesticideUV(currentQuantityMidPoint,enteredUVDose)+remainingPesticideTemp(currentQuantityMidPoint,enteredHours))/2);
-        currentQuantityCombinedBreakdown = Math.max(0,remainingPesticideUV(currentQuantityCombinedBreakdown,enteredUVDose)-(currentQuantityCombinedBreakdown-remainingPesticideTemp(currentQuantityCombinedBreakdown,enteredHours)));
-        currentQuantityUVThenTemp = Math.max(0,remainingPesticideTemp(remainingPesticideUV(currentQuantityUVThenTemp,enteredUVDose),enteredHours));
-        currentQuantityTempThenUV = Math.max(0,remainingPesticideUV(remainingPesticideTemp(currentQuantityTempThenUV,enteredHours),enteredUVDose));
+        currentQuantityBestOne = BigDecimal.valueOf(0).max(remainingPesticideUV(currentQuantityBestOne,enteredUVDose).min(remainingPesticideTemp(currentQuantityBestOne,enteredHours)));
+        currentQuantityWorstOne = BigDecimal.valueOf(0).max(remainingPesticideUV(currentQuantityWorstOne,enteredUVDose).min(remainingPesticideTemp(currentQuantityWorstOne,enteredHours)));
+        currentQuantityMidPoint = BigDecimal.valueOf(0).max((remainingPesticideUV(currentQuantityMidPoint,enteredUVDose).add(remainingPesticideTemp(currentQuantityMidPoint,enteredHours))).divide(BigDecimal.valueOf(2)));
+        currentQuantityCombinedBreakdown = BigDecimal.valueOf(0).max(remainingPesticideUV(currentQuantityCombinedBreakdown,enteredUVDose).subtract(currentQuantityCombinedBreakdown.subtract(remainingPesticideTemp(currentQuantityCombinedBreakdown,enteredHours))));
+        currentQuantityUVThenTemp = BigDecimal.valueOf(0).max(remainingPesticideTemp(remainingPesticideUV(currentQuantityUVThenTemp,enteredUVDose),enteredHours));
+        currentQuantityTempThenUV = BigDecimal.valueOf(0).max(remainingPesticideUV(remainingPesticideTemp(currentQuantityTempThenUV,enteredHours),enteredUVDose));
+
 
         Map<String, Object> user = sendToDatabase();
         db.collection(username).
@@ -93,29 +98,30 @@ public class Project {
         for(String feature : features) {
             String[] labelDataPair = feature.split(" = ");
             switch ((String) labelDataPair[0]) {
-                case "current quantity best one": currentQuantityBestOne = Float.parseFloat(labelDataPair[1]); break;
-                case "current quantity combined breakdown": currentQuantityCombinedBreakdown = Float.parseFloat(labelDataPair[1]); break;
-                case "current quantity mid point": currentQuantityMidPoint = Float.parseFloat(labelDataPair[1]); break;
-                case "current quantity temp then uv": currentQuantityTempThenUV = Float.parseFloat(labelDataPair[1]); break;
-                case "current quantity temp": currentQuantityTemp = Float.parseFloat(labelDataPair[1]); break;
-                case "current quantity uv then temp": currentQuantityUVThenTemp = Float.parseFloat(labelDataPair[1]); break;
-                case "current quantity uv": currentQuantityUV = Float.parseFloat(labelDataPair[1]); break;
-                case "current quantity worst one": currentQuantityWorstOne = Float.parseFloat(labelDataPair[1]); break;
-                case "grow hours": growHours = Float.parseFloat(labelDataPair[1]); break;
-                case "uv dose": uvDose = Float.parseFloat(labelDataPair[1]); break;
-                case "grow temp": growTemp = Float.parseFloat(labelDataPair[1]); break;
-                case "uv fen": uvFen = Float.parseFloat(labelDataPair[1]); break;
+                case "current quantity best one": currentQuantityBestOne = new BigDecimal(labelDataPair[1]); break;
+                case "current quantity combined breakdown": currentQuantityCombinedBreakdown = new BigDecimal(labelDataPair[1]); break;
+                case "current quantity mid point": currentQuantityMidPoint = new BigDecimal(labelDataPair[1]); break;
+                case "current quantity temp then uv": currentQuantityTempThenUV = new BigDecimal(labelDataPair[1]); break;
+                case "current quantity temp": currentQuantityTemp = new BigDecimal(labelDataPair[1]); break;
+                case "current quantity uv then temp": currentQuantityUVThenTemp = new BigDecimal(labelDataPair[1]); break;
+                case "current quantity uv": currentQuantityUV = new BigDecimal(labelDataPair[1]); break;
+                case "current quantity worst one": currentQuantityWorstOne = new BigDecimal(labelDataPair[1]); break;
+                case "grow hours": growHours = new BigDecimal(labelDataPair[1]); break;
+                case "uv dose": uvDose = new BigDecimal(labelDataPair[1]); break;
+                case "grow temp": growTemp = new BigDecimal(labelDataPair[1]); break;
+                case "uv fen": uvFen = new BigDecimal(labelDataPair[1]); break;
+                case "uv rate": uvRate = new BigDecimal(labelDataPair[1]); break;
                 case "pesticide": pesticideType = labelDataPair[1]; break;
                 case "id": projectID = labelDataPair[1]; break;
                 case "covering": coveringType = labelDataPair[1]; break;
-                case "degradation required": degradationRequired = Float.parseFloat(labelDataPair[1]); break;
+                case "degradation required": degradationRequired = new BigDecimal(labelDataPair[1]); break;
                 //case "longitude": longitude = labelDataPair[1]; break;
                 //case "latitude": latitude = labelDataPair[1]; break;
                 case "start date": formattedDate = labelDataPair[1]; break;
-                case "start quantity": startQuantity = Float.parseFloat(labelDataPair[1]); break;
+                case "start quantity": startQuantity = new BigDecimal(labelDataPair[1]); break;
                 //case "days needed": daysNeeded = Integer.parseInt(labelDataPair[1]); break;
-                case "regression parameter 1": regressionParam1 = Float.parseFloat(labelDataPair[1]); break;
-                case "regression parameter 2": regressionParam2 = Float.parseFloat(labelDataPair[1]); break;
+                case "regression parameter 1": regressionParam1 = new BigDecimal(labelDataPair[1]); break;
+                case "regression parameter 2": regressionParam2 = new BigDecimal(labelDataPair[1]); break;
                 default: break;
             }
         }
@@ -124,8 +130,9 @@ public class Project {
     private Map<String, Object> sendToDatabase(){
         Map<String, Object> user = new HashMap<>();
 
+        //Think I've got to add a .toString to the BigDecimals because I had to with the admin app, worth testing later though
         user.put("covering", coveringType);
-        user.put("degradation_required", degradationRequired);
+        user.put("degradation_required", degradationRequired.toString());
         //user.put("latitude", latitude);
         //user.put("longitude", longitude);
         user.put("pesticide", pesticideType);
@@ -134,59 +141,61 @@ public class Project {
         //Add a "last updated" date thing. Also, no harm int adding the time, helps to identify the different projects
 
         //in mg/m2
-        user.put("start_quantity", startQuantity);
+        user.put("start_quantity", startQuantity.toString());
 
-        user.put("grow_temp", growTemp);
+        user.put("grow_temp", growTemp.toString());
 
         //To be updated, running total
-        user.put("grow_hours", growHours);
-        user.put("uv_dose", uvDose);
+        user.put("grow_hours", growHours.toString());
+        user.put("uv_dose", uvDose.toString());
 
         //To be updated each time new data is added
-        user.put("current_quantity_uv", currentQuantityUV);
-        user.put("current_quantity_temp", currentQuantityTemp);
+        user.put("current_quantity_uv", currentQuantityUV.toString());
+        user.put("current_quantity_temp", currentQuantityTemp.toString());
 
         //Guesses as to how to combine the two breakdown rates:
-        user.put("current_quantity_best_one", currentQuantityBestOne);
-        user.put("current_quantity_worst_one", currentQuantityWorstOne);
-        user.put("current_quantity_mid_point", currentQuantityMidPoint);
-        user.put("current_quantity_combined_breakdown", currentQuantityCombinedBreakdown);
-        user.put("current_quantity_uv_then_temp", currentQuantityUVThenTemp);
-        user.put("current_quantity_temp_then_uv", currentQuantityTempThenUV);
+        user.put("current_quantity_best_one", currentQuantityBestOne.toString());
+        user.put("current_quantity_worst_one", currentQuantityWorstOne.toString());
+        user.put("current_quantity_mid_point", currentQuantityMidPoint.toString());
+        user.put("current_quantity_combined_breakdown", currentQuantityCombinedBreakdown.toString());
+        user.put("current_quantity_uv_then_temp", currentQuantityUVThenTemp.toString());
+        user.put("current_quantity_temp_then_uv", currentQuantityTempThenUV.toString());
 
-        user.put("uv_fen", uvFen);
+        user.put("uv_fen", uvFen.toString());
+        user.put("uv_rate",uvRate.toString());
 
-        user.put("regression parameter 1", regressionParam1);
-        user.put("regression parameter 2", regressionParam2);
+        user.put("regression parameter 1", regressionParam1.toString());
+        user.put("regression parameter 2", regressionParam2.toString());
 
         //Based only on UV breakdown, not temperature yet
         //user.put("days_needed", daysNeeded);
-
-
         return user;
     }
 
-    private float remainingPesticideTemp(float startConcentration, float hours){
-        return startConcentration - (hours * volatilisationRate())/1000;
+    private BigDecimal remainingPesticideTemp(BigDecimal startConcentration, BigDecimal hours){
+        return startConcentration.subtract(hours.multiply(volatilisationRate().divide(BigDecimal.valueOf(1000))));
     }
 
-    private float remainingPesticideUV(float startConcentration, float givenUVDose){
-        float fractionPhotodegraded = 1 - (float) (1 * Math.pow(E,-0.0009 * uvFen * givenUVDose));
-        return startConcentration - (fractionPhotodegraded*startConcentration);
+    private BigDecimal remainingPesticideUV(BigDecimal startConcentration, BigDecimal givenUVDose){
+        //Okay, can't use .pow() from BigDecimal because you can only raise by integers, so might have to use doubles. This could also be fucked
+        //There are going to be so many mistakes, god if all the numbers are right first go it'll be a miracle
+        BigDecimal fractionPhotodegraded = BigDecimal.valueOf(1).subtract(BigDecimal.valueOf(1).multiply(BigDecimal.valueOf(Math.pow(E,-0.0009*uvFen.doubleValue()*givenUVDose.doubleValue()))));
+        return startConcentration.subtract(fractionPhotodegraded.multiply(startConcentration));
     }
 
     //This will need changing, pass RPs to the class, don't find them here
-    private float volatilisationRate(){
-        float tempInKelvin = growTemp + (float) 273.15;
-        //float regressionParam1 = 0;
-        //float regressionParam2 = 0;
-        //if(pesticideType.equals("Fenitrothion")){
-            //regressionParam1 = (float) 6.3362;
-            //regressionParam2 = (float) 3197.8;
-        //}
-        float vapourPressure = (float) Math.pow(10,(regressionParam1 - (regressionParam2/tempInKelvin)));
-        float vapourPressure1mmHg = (float) vapourPressure * (float) 133.322;
-        float lnVP = (float) log(vapourPressure1mmHg);
-        return (float) Math.pow(E,(11.81+(0.85956*lnVP)));
+    private BigDecimal volatilisationRate(){
+        BigDecimal tempInKelvin = growTemp.add(BigDecimal.valueOf(273.15));
+        //I'm not exactly clear why this division broke it, the others seem fine but I'm worried they'll break if I can't figure out this one
+        BigDecimal vapourPressureP1 = BigDecimal.valueOf(regressionParam2.doubleValue()/tempInKelvin.doubleValue());
+        BigDecimal vapourPressureP2 = regressionParam1.subtract(vapourPressureP1);
+        BigDecimal vapourPressure = BigDecimal.valueOf(Math.pow(10,vapourPressureP2.doubleValue()));
+        BigDecimal vapourPressure1mmHg = vapourPressure.multiply(BigDecimal.valueOf(133.322));
+        //Bit janky, maybe try to improve?
+        BigDecimal lnVP = BigDecimal.valueOf(log(vapourPressure1mmHg.doubleValue()));
+        //Also pretty janky
+        return BigDecimal.valueOf(Math.pow(E,BigDecimal.valueOf(11.81).add(BigDecimal.valueOf(0.85956).multiply(lnVP)).doubleValue()));
+        //Why are all these values hardcoded?? Are they to do with which pesticide or covering you use? Really need to know what these are.
+        //Even if they aren't ones that would change, we should at least name them, that can be the boring task for tomorrow
     }
 }

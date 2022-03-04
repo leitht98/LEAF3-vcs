@@ -3,9 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_data_log.xml" value="0.24682971014492755" />
         <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_delete_project.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_loading_page.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/activity_update_project.xml" value="0.24682971014492755" />
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/layout/text_row_item.xml" value="0.24682971014492755" />
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2365" />
+        <entry key="..\:/Users/thoma/StudioProjects/LEAF3-vcs/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.2365" />
       </map>
     </option>
   </component>

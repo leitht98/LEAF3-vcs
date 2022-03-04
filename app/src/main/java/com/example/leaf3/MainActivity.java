@@ -26,6 +26,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -39,11 +41,11 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
     //Hardcoded username to store projects in individual databases, eventually this will be entered by the user
-    String username = "Tom";
+    String username = "BiigDeciimal";
     //To store the project location
     Location currentLocation = new Location("");
     //protected String latitude,longitude;
-    protected float uvFen, regressionParam1, regressionParam2;
+
     //private TextView resultOutput;
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -51,9 +53,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     //int PERMISSION_ID = 44;
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
     private Button goButton, getDataButton;
-    float uvRate = (float) 1;
-    float rParam1 = (float) 1;
-    float rParam2 = (float) 1;
+
+    BigDecimal uvFen, uvRate, rParam1, rParam2;
 
     ArrayList<String> tempCoveringSpinnerArray = new ArrayList<>();
     ArrayList<String> coveringSpinnerArray = new ArrayList<>();
@@ -116,158 +117,176 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         Button databaseButton = findViewById(R.id.databaseButton);
 
         //Ideally, I'll be able to get rid of this.
-        getDataButton.setOnClickListener(v->{
-            ExecutorService service = Executors.newSingleThreadExecutor();
-            service.execute(() -> {
-                //onPre
-                //I don't actually think I need this?
-                runOnUiThread(() -> {
-                    //
-                    System.out.println("This is pre");
-                    System.out.println(">>>"+tempCoveringSpinnerArray.size());
-                });
-                //background
-                //
-                System.out.println("This is background");
-                System.out.println(">>>"+tempCoveringSpinnerArray.size());
-
-                ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-                if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
-                        connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
-                    db.collection("coverings")
-                            .get()
-                            .addOnCompleteListener(task -> {
-                                StringBuilder dataString = new StringBuilder();
-                                if (task.isSuccessful()) {
-                                    for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                        dataString.append(document.getData());
-                                    }
-                                    System.out.println("Raw data string" + dataString);
-
-                                    String dataStringTrim = dataString.toString().substring(1,dataString.length()-1);
-                                    System.out.println("Raw and trimmed: "+dataStringTrim);
-                                    String[] coveringsData = dataStringTrim.toString().split("\\}\\{");
-                                    for(String i : coveringsData){
-                                        System.out.println("individual data: "+i);
-                                        String[] coveringValues = i.split(",");
-                                        System.out.println("UV Rate: "+coveringValues[0].split("=")[1]+"\nUV Fen: "+coveringValues[1].split("=")[1]+"\nName: "+coveringValues[2].split("=")[1]);
-                                        Float rate = Float.parseFloat(coveringValues[0].split("=")[1]);
-                                        Float fen = Float.parseFloat(coveringValues[1].split("=")[1]);
-                                        String name = coveringValues[2].split("=")[1];
-                                        boolean newCovering = true;
-                                        for (String j: tempCoveringSpinnerArray){
-                                            if(j.equals(name)){
-                                                newCovering = false;
-                                            }
-                                        }
-                                        if(newCovering) {
-                                            tempCoveringSpinnerArray.add(name);
-                                            coveringsObjectArray.add(new Covering(name,fen,rate));
-                                        }
-                                    }
-                                    for(String i:tempCoveringSpinnerArray) {
-                                        System.out.println("IT???~ "+i);
-                                    }
-                                    //This never seems to run?? Or having this here stops the whole section running, WHAT???
-                                    //Having both also makes it too fast? So it doesn't run this section unless it knows it'll close??
-                                    service.shutdown();
-                                } else {
-                                    System.out.println("Fail at check 1");
-                                }
-                            });
-
-                    db.collection("pesticides")
-                            .get()
-                            .addOnCompleteListener(task -> {
-                                StringBuilder dataString = new StringBuilder();
-                                if (task.isSuccessful()) {
-                                    for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                        dataString.append(document.getData());
-                                    }
-                                    System.out.println("Raw data string" + dataString);
-
-                                    String dataStringTrim = dataString.toString().substring(1,dataString.length()-1);
-                                    System.out.println("Raw and trimmed: "+dataStringTrim);
-                                    String[] coveringsData = dataStringTrim.toString().split("\\}\\{");
-                                    for(String i : coveringsData){
-                                        System.out.println("individual data: "+i);
-                                        String[] coveringValues = i.split(",");
-                                        System.out.println("Name: "+coveringValues[0].split("=")[1]+"\nRP1: "+coveringValues[1].split("=")[1]+"\nRP2: "+coveringValues[2].split("=")[1]);
-                                        String name = coveringValues[0].split("=")[1];
-                                        Float rp1 = Float.parseFloat(coveringValues[1].split("=")[1]);
-                                        Float rp2 = Float.parseFloat(coveringValues[2].split("=")[1]);
-                                        boolean newPesticide = true;
-                                        for (String j: tempPesticideSpinnerArray){
-                                            if(j.equals(name)){
-                                                newPesticide = false;
-                                            }
-                                        }
-                                        if(newPesticide) {
-                                            tempPesticideSpinnerArray.add(name);
-                                            pesticidesObjectArray.add(new Pesticide(name,rp1,rp2));
-                                        }
-                                    }
-                                    //This never seems to run?? Or having this here stops the whole section running, WHAT???
-                                    //Having both also makes it too fast? So it doesn't run this section unless it knows it'll close??
-                                    service.shutdown();
-                                } else {
-                                    System.out.println("Fail at check 1");
-                                }
-                            });
-
-
-                    //This shuts it down too fast
-                    service.shutdown();
-                    //The if just breaks it. Why do I need this to allow the other section to run?
-                    //if(tempCoveringSpinnerArray.size()==5) {
-                        //service.shutdown();
-                    //}
-                } else{
-                    System.out.println("Fail at check 2");
-                }
-
-                //onPost
-                runOnUiThread(() -> {
-                    //
-                    try {
-                        service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                        System.out.println("This is post");
+        getDataButton.setOnClickListener(v-> {
+            if(isNetworkAvailable()){
+                try {
+                    ExecutorService service = Executors.newSingleThreadExecutor();
+                    service.execute(() -> {
+                        //onPre
+                        //I don't actually think I need this?
+                        runOnUiThread(() -> {
+                            //
+                            System.out.println("This is pre");
+                            System.out.println(">>>" + tempCoveringSpinnerArray.size());
+                        });
+                        //background
+                        //
+                        System.out.println("This is background");
                         System.out.println(">>>" + tempCoveringSpinnerArray.size());
-                        String coveringNamesString = "";
-                        //If you press load a second time it works! I just need to get it to bloody wait and I'm there
-                        for(String i:tempCoveringSpinnerArray) {
-                            coveringNamesString+=i;
+
+                        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                        if (connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
+                                connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
+                            db.collection("coverings")
+                                    .get()
+                                    .addOnCompleteListener(task -> {
+                                        StringBuilder dataString = new StringBuilder();
+                                        if (task.isSuccessful()) {
+                                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                                dataString.append(document.getData());
+                                            }
+                                            System.out.println("Raw data string" + dataString);
+
+                                            ////////
+                                            tempCoveringSpinnerArray.clear();
+                                            coveringSpinnerArray.clear();
+                                            coveringsObjectArray.clear();
+                                            ////////
+
+                                            String dataStringTrim = dataString.toString().substring(1, dataString.length() - 1);
+                                            System.out.println("Raw and trimmed: " + dataStringTrim);
+                                            String[] coveringsData = dataStringTrim.toString().split("\\}\\{");
+                                            for (String i : coveringsData) {
+                                                System.out.println("individual data: " + i);
+                                                String[] coveringValues = i.split(",");
+                                                System.out.println("UV Rate: " + coveringValues[0].split("=")[1] + "\nUV Fen: " + coveringValues[1].split("=")[1] + "\nName: " + coveringValues[2].split("=")[1]);
+                                                BigDecimal rate = new BigDecimal(coveringValues[0].split("=")[1]);
+                                                BigDecimal fen = new BigDecimal(coveringValues[1].split("=")[1]);
+                                                String name = coveringValues[2].split("=")[1];
+                                                boolean newCovering = true;
+                                                for (String j : tempCoveringSpinnerArray) {
+                                                    if (j.equals(name)) {
+                                                        newCovering = false;
+                                                    }
+                                                }
+                                                if (newCovering) {
+                                                    tempCoveringSpinnerArray.add(name);
+                                                    coveringsObjectArray.add(new Covering(name, fen, rate));
+                                                }
+                                            }
+                                            for (String i : tempCoveringSpinnerArray) {
+                                                System.out.println("IT???~ " + i);
+                                            }
+                                            //This never seems to run?? Or having this here stops the whole section running, WHAT???
+                                            //Having both also makes it too fast? So it doesn't run this section unless it knows it'll close??
+                                            service.shutdown();
+                                        } else {
+                                            System.out.println("Fail at check 1");
+                                        }
+                                    });
+
+                            db.collection("pesticides")
+                                    .get()
+                                    .addOnCompleteListener(task -> {
+                                        StringBuilder dataString = new StringBuilder();
+                                        if (task.isSuccessful()) {
+                                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                                dataString.append(document.getData());
+                                            }
+                                            System.out.println("Raw data string" + dataString);
+
+                                            ////////
+                                            tempPesticideSpinnerArray.clear();
+                                            pesticideSpinnerArray.clear();
+                                            pesticidesObjectArray.clear();
+                                            ////////
+
+                                            String dataStringTrim = dataString.toString().substring(1, dataString.length() - 1);
+                                            System.out.println("Raw and trimmed: " + dataStringTrim);
+                                            String[] coveringsData = dataStringTrim.toString().split("\\}\\{");
+                                            for (String i : coveringsData) {
+                                                System.out.println("individual data: " + i);
+                                                String[] coveringValues = i.split(",");
+                                                System.out.println("Name: " + coveringValues[0].split("=")[1] + "\nRP1: " + coveringValues[1].split("=")[1] + "\nRP2: " + coveringValues[2].split("=")[1]);
+                                                String name = coveringValues[0].split("=")[1];
+                                                BigDecimal rp1 = new BigDecimal(coveringValues[1].split("=")[1]);
+                                                BigDecimal rp2 = new BigDecimal(coveringValues[2].split("=")[1]);
+                                                boolean newPesticide = true;
+                                                for (String j : tempPesticideSpinnerArray) {
+                                                    if (j.equals(name)) {
+                                                        newPesticide = false;
+                                                    }
+                                                }
+                                                if (newPesticide) {
+                                                    tempPesticideSpinnerArray.add(name);
+                                                    pesticidesObjectArray.add(new Pesticide(name, rp1, rp2));
+                                                }
+                                            }
+                                            //This never seems to run?? Or having this here stops the whole section running, WHAT???
+                                            //Having both also makes it too fast? So it doesn't run this section unless it knows it'll close??
+                                            service.shutdown();
+                                        } else {
+                                            System.out.println("Fail at check 1");
+                                        }
+                                    });
+
+
+                            //This shuts it down too fast
+                            service.shutdown();
+                            //The if just breaks it. Why do I need this to allow the other section to run?
+                            //if(tempCoveringSpinnerArray.size()==5) {
+                            //service.shutdown();
+                            //}
+                        } else {
+                            System.out.println("Fail at check 2");
                         }
-                        if(coveringNamesString==""){
-                            getDataButton.setText("Press Again");
-                        }else {
-                            getDataButton.setText("GET DATA");
 
-                            coveringSpinnerArray = tempCoveringSpinnerArray;
-                            ArrayAdapter<String> coveringStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
-                            coveringStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
-                            coveringSpinner.setAdapter(coveringStringAdapterTemp);
+                        //onPost
+                        runOnUiThread(() -> {
+                            //
+                            try {
+                                service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                                System.out.println("This is post");
+                                System.out.println(">>>" + tempCoveringSpinnerArray.size());
+                                String coveringNamesString = "";
+                                //If you press load a second time it works! I just need to get it to bloody wait and I'm there
+                                for (String i : tempCoveringSpinnerArray) {
+                                    coveringNamesString += i;
+                                }
+                                if (coveringNamesString == "") {
+                                    getDataButton.setText("Press Again");
+                                } else {
+                                    getDataButton.setText("GET DATA");
 
-                            pesticideSpinnerArray = tempPesticideSpinnerArray;
-                            ArrayAdapter<String> pesticideStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, pesticideSpinnerArray);
-                            pesticideStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
-                            pesticideSpinner.setAdapter(pesticideStringAdapterTemp);
-                        }
+                                    coveringSpinnerArray = tempCoveringSpinnerArray;
+                                    ArrayAdapter<String> coveringStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
+                                    coveringStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
+                                    coveringSpinner.setAdapter(coveringStringAdapterTemp);
 
-                    } catch(InterruptedException e){
-                        System.out.println("Fail at check 3");
-                    }
-                });
-            });
+                                    pesticideSpinnerArray = tempPesticideSpinnerArray;
+                                    ArrayAdapter<String> pesticideStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, pesticideSpinnerArray);
+                                    pesticideStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
+                                    pesticideSpinner.setAdapter(pesticideStringAdapterTemp);
+                                }
 
-
+                            } catch (InterruptedException e) {
+                                System.out.println("Fail at check 3");
+                            }
+                        });
+                    });
+                } catch (Exception e) {
+                    //Why isn't it going to the catch? Very confusing
+                    Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();
+                }
+            } else{
+                Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();
+            }
         });
 
         //ArrayList<String> finalTempCoveringSpinnerArray = tempCoveringSpinnerArray;
         goButton.setOnClickListener(v->{
-            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-            if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
-                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
+            //ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(isNetworkAvailable()) {
                 //This is where you call MyTask, the Async thing, so just do another one for getting covering data
                 //new MyTask().execute();
 
@@ -280,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         //
                         //System.out.println("This is pre");
                         try {
-                            Float.parseFloat(enterDegradation.getText().toString());
+                            new BigDecimal(enterDegradation.getText().toString());
                         } catch (Exception e) {
                             Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
                             //cancel(true);
@@ -297,7 +316,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         //System.out.println("This is post");
                         goButton.setText("GO!");
 
-                        //Toast.makeText(MainActivity.this, "!!!!!!!!"+coveringType, Toast.LENGTH_SHORT).show();
                         try {
                             if(!(coveringType==null)) {
                                 if (Float.parseFloat(enterDegradation.getText().toString()) < 100 && Float.parseFloat(enterDegradation.getText().toString()) >= 0) {
@@ -307,8 +325,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     Project project = new Project();
                                     //Need to add error message if it fails to write to the database.
                                     //project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
-                                    project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, rParam1, rParam2, username);
-                                    //Toast.makeText(MainActivity.this, "Calculation Finished.\n" + resultOutput.getText().toString(), Toast.LENGTH_SHORT).show();
+                                    project.saveToDatabase(new BigDecimal(enterStartQuantity.getText().toString()), new BigDecimal(enterUVDose.getText().toString()), new BigDecimal(enterHours.getText().toString()), new BigDecimal(enterGrowTemp.getText().toString()), new BigDecimal(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, uvRate, rParam1, rParam2, username);
                                     Toast.makeText(MainActivity.this, "Calculation Finished.\nProject is being saved...", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(MainActivity.this, "Degradation must be between 0 and 100%", Toast.LENGTH_SHORT).show();
@@ -326,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
             }
             else {
-                Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -334,9 +351,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
 
             //Check if the app is connected
-            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-            if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
-                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
+            //ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(isNetworkAvailable()) {
                 db.collection(username)
                         .get()
                         .addOnCompleteListener(task -> {
@@ -350,11 +366,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                 //Copy this section to open the loading page
                                 openNewActivity(dataString.toString());
                             } else {
-                                Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();
                             }
                         });
             } else{
-                Toast.makeText(MainActivity.this, "Please connect ot the internet.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -405,8 +421,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     System.out.println("individual data: "+i);
                                     String[] coveringValues = i.split(",");
                                     System.out.println("UV Rate: "+coveringValues[0].split("=")[1]+"\nUV Fen: "+coveringValues[1].split("=")[1]+"\nName: "+coveringValues[2].split("=")[1]);
-                                    Float rate = Float.parseFloat(coveringValues[0].split("=")[1]);
-                                    Float fen = Float.parseFloat(coveringValues[1].split("=")[1]);
+                                    BigDecimal rate = new BigDecimal(coveringValues[0].split("=")[1]);
+                                    BigDecimal fen = new BigDecimal(coveringValues[1].split("=")[1]);
                                     String name = coveringValues[2].split("=")[1];
                                     boolean newCovering = true;
                                     for (String j: coveringSpinnerArrayUsingFuturesTemp){
@@ -451,18 +467,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 }
                 break;
             case R.id.pesticide_spinner:
-                //Toast.makeText(MainActivity.this, "Spinning! pesticides", Toast.LENGTH_SHORT).show();
-                /*parent.getItemAtPosition(pos);
-                switch ((int) id) {
-                    case 0: //Fenitrothion
-                        pesticideType = "Fenitrothion";
-                        regressionParam1 = (float) 6.3362;
-                        regressionParam2 = (float) 3197.8;
-                        break;
-                    default:
-                        Toast.makeText(MainActivity.this, "Error fetching pesticide.", Toast.LENGTH_SHORT).show();
-                        break;
-                }*/
                 for (Pesticide i:pesticidesObjectArray){
                     if (i.getName().equals(pesticideSpinner.getSelectedItem().toString())){
                         pesticideType = i.getName();
@@ -477,5 +481,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 break;
         }
 
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+
+        boolean isAvailable = false;
+        if (networkInfo != null && networkInfo.isConnected()) {
+            isAvailable = true;
+        }
+        return isAvailable;
     }
 }

@@ -2,12 +2,17 @@ package com.example.leaf3;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.math.BigDecimal;
 
 public class UpdateProject extends AppCompatActivity {
     Button backButton, updateButton;
@@ -32,18 +37,39 @@ public class UpdateProject extends AppCompatActivity {
 
         projectData.setText(dataString);
 
+        if(!isNetworkAvailable()){
+            Toast.makeText(UpdateProject.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();
+            this.finish();
+        }
+
         backButton.setOnClickListener(v -> this.finish());
 
         updateButton.setOnClickListener(v -> {
-            try {
-                project.updateProjectData(Float.parseFloat(enterHours.getText().toString()),Float.parseFloat(enterUVDose.getText().toString()),username);
-                Intent i=new Intent(this, MainActivity.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                this.startActivity(i);
-                Toast.makeText(UpdateProject.this, "Project has been updated.\nReturn to database to view.", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Toast.makeText(UpdateProject.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
+            if(isNetworkAvailable()) {
+                try {
+                    //Changed from floats
+                    project.updateProjectData(new BigDecimal(enterHours.getText().toString()), new BigDecimal(enterUVDose.getText().toString()), username);
+                    Intent i = new Intent(this, MainActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    this.startActivity(i);
+                    Toast.makeText(UpdateProject.this, "Project has been updated.\nReturn to database to view.", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(UpdateProject.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
+                }
+            } else{
+                Toast.makeText(UpdateProject.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+
+        boolean isAvailable = false;
+        if (networkInfo != null && networkInfo.isConnected()) {
+            isAvailable = true;
+        }
+        return isAvailable;
     }
 }

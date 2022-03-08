@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,10 +20,24 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -40,8 +55,9 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
+    public static final int RC_SIGN_IN = 123;
     //Hardcoded username to store projects in individual databases, eventually this will be entered by the user
-    String username = "BiigDeciimal";
+    String username = "Backup";
     //To store the project location
     Location currentLocation = new Location("");
     //protected String latitude,longitude;
@@ -52,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     //private TextView latitudeTextView, longitudeTextView;
     //int PERMISSION_ID = 44;
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
-    private Button goButton, getDataButton;
+    private Button goButton, getDataButton, databaseButton, signOutButton;
 
     BigDecimal uvFen, uvRate, rParam1, rParam2;
 
@@ -69,6 +85,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     ArrayList<Covering> coveringsObjectArray = new ArrayList<>();
     ArrayList<Pesticide> pesticidesObjectArray = new ArrayList<>();
 
+    SignInButton btnSignIn;
+    private GoogleSignInClient mGoogleSignInClient;
+    private FirebaseAuth mAuth;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +99,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         coveringSpinner = findViewById(R.id.covering_spinner);
         pesticideSpinner = findViewById(R.id.pesticide_spinner);
+
+        mAuth = FirebaseAuth.getInstance();
+        requestGoogleSignIn();
+
+        btnSignIn = findViewById(R.id.btnSignIn);
+        btnSignIn.setOnClickListener(v -> {
+            signIn();
+        });
+
+
         //coveringSpinner.setOnItemSelectedListener(this);
         ExecutorService coveringsService = Executors.newSingleThreadExecutor();
         Future<ArrayList<String>> future = coveringsService.submit(new getCoveringsAsFuture());
@@ -114,7 +146,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         enterUVDose = findViewById(R.id.enterUVDose);
         getDataButton = findViewById(R.id.getDataButton);
         goButton = findViewById(R.id.goButton);
-        Button databaseButton = findViewById(R.id.databaseButton);
+        databaseButton = findViewById(R.id.databaseButton);
+
+        signOutButton = findViewById(R.id.signOutButton);
 
         //Ideally, I'll be able to get rid of this.
         getDataButton.setOnClickListener(v-> {
@@ -317,6 +351,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         goButton.setText("GO!");
 
                         try {
+                            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+                            //I think your problem is in here, if I remember rightly, the "values must be numbers" message is coming up
+                            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
                             if(!(coveringType==null)) {
                                 if (Float.parseFloat(enterDegradation.getText().toString()) < 100 && Float.parseFloat(enterDegradation.getText().toString()) >= 0) {
                                     //Okay, this works but remember it's using UVFen, not just a UV dose.
@@ -326,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     //Need to add error message if it fails to write to the database.
                                     //project.saveToDatabase(Float.parseFloat(enterStartQuantity.getText().toString()), Float.parseFloat(enterUVDose.getText().toString()), Float.parseFloat(enterHours.getText().toString()), Float.parseFloat(enterGrowTemp.getText().toString()), Float.parseFloat(enterDegradation.getText().toString()), resultOutput.getText().toString(), coveringType, latitude, longitude, pesticideType, uvFen);
                                     project.saveToDatabase(new BigDecimal(enterStartQuantity.getText().toString()), new BigDecimal(enterUVDose.getText().toString()), new BigDecimal(enterHours.getText().toString()), new BigDecimal(enterGrowTemp.getText().toString()), new BigDecimal(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, uvRate, rParam1, rParam2, username);
-                                    Toast.makeText(MainActivity.this, "Calculation Finished.\nProject is being saved...", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Calculation Finished\nProject saved", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(MainActivity.this, "Degradation must be between 0 and 100%", Toast.LENGTH_SHORT).show();
                                 }
@@ -374,8 +411,34 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             }
         });
 
+        signOutButton.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            username = "Backup";
+            Toast.makeText(MainActivity.this, "Signed out.", Toast.LENGTH_SHORT).show();
+        });
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         //resultOutput = (TextView) findViewById(R.id.result_output);
+    }
+
+    //Okay!!!! It's in here!
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        //This is the line that breaks it. Why though?
+        //Still breaks when you hit Sign In anyway... Fuck's sake,
+
+        //updateUI(currentUser);
+        //These break it if it's the first time, put in a bot null if. Then check why it doesn't work with the new username once you sign in.
+        try {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            //Toast.makeText(MainActivity.this, "Welcome back "+currentUser.getDisplayName(), Toast.LENGTH_SHORT).show();
+            username = currentUser.getDisplayName();
+        } catch(Exception e) {
+            Toast.makeText(MainActivity.this, "Welcome, please sign in to continue", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void openNewActivity(String dataString){
@@ -493,4 +556,70 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
         return isAvailable;
     }
+
+
+
+
+    private void requestGoogleSignIn(){
+        // Configure Google Sign In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        //I can't see why this wouldn't work?
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+    }
+
+    private void signIn() {
+        //Apparently mGoogleSignInClient is a null object now?
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                //Okay! We've found a problem. Why doesn't this work?
+                // Google Sign In was successful, authenticate with Firebase
+                //Okay, it breaks here. What the fuck is it?? It's exactly the same!
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                //Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
+                firebaseAuthWithGoogle(account.getIdToken());
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                //System.out.println("££££££"+e);
+                //Toast.makeText(MainActivity.this,"failure!!!!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            //Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            //Toast.makeText(MainActivity.this,mAuth.getCurrentUser().getDisplayName(), Toast.LENGTH_SHORT).show();
+                            //updateUI(user);
+                            username = mAuth.getCurrentUser().getDisplayName();
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            //Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            //updateUI(null);
+                            //Toast.makeText(MainActivity.this,"failure",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
 }

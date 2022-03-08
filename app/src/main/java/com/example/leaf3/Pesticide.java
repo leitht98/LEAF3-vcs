@@ -12,15 +12,7 @@ public class Pesticide {
         rParam2 = rp2;
     }
 
-    public String getName(){
-        return pesticideName;
-    }
-
-    public BigDecimal getRParam1(){
-        return rParam1;
-    }
-
-    public BigDecimal getRParam2(){
-        return rParam2;
-    }
+    public String getName(){return pesticideName;}
+    public BigDecimal getRParam1(){return rParam1;}
+    public BigDecimal getRParam2(){return rParam2;}
 }

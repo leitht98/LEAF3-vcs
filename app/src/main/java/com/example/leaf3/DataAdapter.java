@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,17 +21,14 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
         //Add buttons to each project in the database to 'Update' and 'Delete'
         public ViewHolder(View view, String username) {
             super(view);
-            textView = (TextView) view.findViewById(R.id.textView);
-            //I'm not sure why I added this
-            if(textView.getText().equals("")) {
-                //Add listener to 'Update' button and call function to launch new activity
-                Button projectButton = (Button) view.findViewById(R.id.projectButton);
-                projectButton.setOnClickListener(v -> openNewActivity((String) textView.getText(), username, view));
+            textView = view.findViewById(R.id.textView);
+            //Add listener to 'Update' button and call function to launch new activity
+            Button projectButton = view.findViewById(R.id.projectButton);
+            projectButton.setOnClickListener(v -> openNewActivity(textView.getText().toString(), username, view));
 
-                //Add listener to 'Delete' button and call function to launch new activity
-                Button deleteButton = (Button) view.findViewById(R.id.deleteButton);
-                deleteButton.setOnClickListener(v -> openDeleteActivity((String) textView.getText(), username, view));
-            }
+            //Add listener to 'Delete' button and call function to launch new activity
+            Button deleteButton = view.findViewById(R.id.deleteButton);
+            deleteButton.setOnClickListener(v -> openDeleteActivity(textView.getText().toString(), username, view));
         }
 
         public TextView getTextView() {return textView;}
@@ -63,7 +59,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
      *
      * @param dataSet String[] containing the data to populate views to be used
      * by RecyclerView.
-     * @param username
      */
     //Constructor
     public DataAdapter(String[] dataSet, String username) {
@@ -86,9 +81,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int position) {
         // Get element from dataset at this position and replace the
         // contents of the view with that element
-        if(!localDataSet[position].equals("")) {
-            viewHolder.getTextView().setText(localDataSet[position]);
-        }
+        if(!localDataSet[position].equals("")) {viewHolder.getTextView().setText(localDataSet[position]);}
     }
 
     // Return the size of your dataset (invoked by the layout manager)

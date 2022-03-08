@@ -15,15 +15,7 @@ public class Covering {
     }
 
     //Getters, don't need setters yet
-    public String getCoveringName() {
-        return coveringName;
-    }
-
-    public BigDecimal getUVFen() {
-        return uvFen;
-    }
-
-    public BigDecimal getUVRate() {
-        return uvRate;
-    }
+    public String getCoveringName() {return coveringName;}
+    public BigDecimal getUVFen() {return uvFen;}
+    public BigDecimal getUVRate() {return uvRate;}
 }

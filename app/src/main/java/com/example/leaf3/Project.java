@@ -1,7 +1,6 @@
 package com.example.leaf3;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -9,11 +8,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
 import static java.lang.Math.E;
 import static java.lang.Math.log;
-
-import android.widget.Toast;
 
 public class Project {
     BigDecimal currentQuantityBestOne, currentQuantityCombinedBreakdown, currentQuantityMidPoint, currentQuantityTemp, currentQuantityTempThenUV;
@@ -97,7 +93,7 @@ public class Project {
         String[] features = dataString.split("\n");
         for(String feature : features) {
             String[] labelDataPair = feature.split(" = ");
-            switch ((String) labelDataPair[0]) {
+            switch (labelDataPair[0]) {
                 case "current quantity best one": currentQuantityBestOne = new BigDecimal(labelDataPair[1]); break;
                 case "current quantity combined breakdown": currentQuantityCombinedBreakdown = new BigDecimal(labelDataPair[1]); break;
                 case "current quantity mid point": currentQuantityMidPoint = new BigDecimal(labelDataPair[1]); break;

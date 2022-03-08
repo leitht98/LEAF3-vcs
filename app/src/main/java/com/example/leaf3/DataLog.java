@@ -33,11 +33,8 @@ public class DataLog extends AppCompatActivity {
             Arrays.sort(tempArray);
             StringBuilder tempString = new StringBuilder();
             for(int j=0; j<tempArray.length; j++){
-                if(j<tempArray.length-1) {
-                    tempString.append(tempArray[j]).append(", ");
-                } else{
-                    tempString.append(tempArray[j]);
-                }
+                if(j<tempArray.length-1) {tempString.append(tempArray[j]).append(", ");
+                } else{tempString.append(tempArray[j]);}
             }
             dataArray[i] = tempString.toString();
             dataArray[i] = dataArray[i].replace("}", "");
@@ -66,6 +63,4 @@ public class DataLog extends AppCompatActivity {
 
         backButton.setOnClickListener(v -> this.finish());
     }
-
-
 }

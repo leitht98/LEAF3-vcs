@@ -15,7 +15,7 @@ public class Project {
     BigDecimal currentQuantityBestOne, currentQuantityCombinedBreakdown, currentQuantityMidPoint, currentQuantityTemp, currentQuantityTempThenUV;
     BigDecimal currentQuantityUV, currentQuantityUVThenTemp, currentQuantityWorstOne, degradationRequired, growHours, uvDose, startQuantity, uvFen, uvRate, growTemp;
     BigDecimal regressionParam1, regressionParam2;
-    String pesticideType, projectID, coveringType, formattedDate;
+    String pesticideType, projectID, coveringType, formattedStartDate, formattedUpdateDate;
     //String resultOutput;
     //int daysNeeded;
     FirebaseFirestore db;
@@ -57,7 +57,8 @@ public class Project {
 
         Date c = Calendar.getInstance().getTime();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        formattedDate = df.format(c);
+        formattedStartDate = df.format(c);
+        formattedUpdateDate = "N/A";
 
         //daysNeeded = Integer.parseInt(resultOutput.substring(15));
 
@@ -68,6 +69,10 @@ public class Project {
     }
 
     public void updateProjectData(BigDecimal enteredHours,BigDecimal enteredUVDose, String username){
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        formattedUpdateDate = df.format(c);
+
         growHours = growHours.add(enteredHours);
         uvDose = uvDose.add(enteredUVDose);
 
@@ -94,30 +99,32 @@ public class Project {
         for(String feature : features) {
             String[] labelDataPair = feature.split(" = ");
             switch (labelDataPair[0]) {
-                case "current quantity best one": currentQuantityBestOne = new BigDecimal(labelDataPair[1]); break;
-                case "current quantity combined breakdown": currentQuantityCombinedBreakdown = new BigDecimal(labelDataPair[1]); break;
-                case "current quantity mid point": currentQuantityMidPoint = new BigDecimal(labelDataPair[1]); break;
-                case "current quantity temp then uv": currentQuantityTempThenUV = new BigDecimal(labelDataPair[1]); break;
-                case "current quantity temp": currentQuantityTemp = new BigDecimal(labelDataPair[1]); break;
-                case "current quantity uv then temp": currentQuantityUVThenTemp = new BigDecimal(labelDataPair[1]); break;
-                case "current quantity uv": currentQuantityUV = new BigDecimal(labelDataPair[1]); break;
-                case "current quantity worst one": currentQuantityWorstOne = new BigDecimal(labelDataPair[1]); break;
-                case "grow hours": growHours = new BigDecimal(labelDataPair[1]); break;
-                case "uv dose": uvDose = new BigDecimal(labelDataPair[1]); break;
-                case "grow temp": growTemp = new BigDecimal(labelDataPair[1]); break;
-                case "uv fen": uvFen = new BigDecimal(labelDataPair[1]); break;
-                case "uv rate": uvRate = new BigDecimal(labelDataPair[1]); break;
-                case "pesticide": pesticideType = labelDataPair[1]; break;
-                case "id": projectID = labelDataPair[1]; break;
-                case "covering": coveringType = labelDataPair[1]; break;
-                case "degradation required": degradationRequired = new BigDecimal(labelDataPair[1]); break;
+                case "01. covering": coveringType = labelDataPair[1]; break;
+                case "02. uv fen": uvFen = new BigDecimal(labelDataPair[1]); break;
+                case "03. uv rate": uvRate = new BigDecimal(labelDataPair[1]); break;
+                case "04. pesticide": pesticideType = labelDataPair[1]; break;
+                case "05. regression parameter 1": regressionParam1 = new BigDecimal(labelDataPair[1]); break;
+                case "06. regression parameter 2": regressionParam2 = new BigDecimal(labelDataPair[1]); break;
                 //case "longitude": longitude = labelDataPair[1]; break;
                 //case "latitude": latitude = labelDataPair[1]; break;
-                case "start date": formattedDate = labelDataPair[1]; break;
-                case "start quantity": startQuantity = new BigDecimal(labelDataPair[1]); break;
                 //case "days needed": daysNeeded = Integer.parseInt(labelDataPair[1]); break;
-                case "regression parameter 1": regressionParam1 = new BigDecimal(labelDataPair[1]); break;
-                case "regression parameter 2": regressionParam2 = new BigDecimal(labelDataPair[1]); break;
+                case "07. start date": formattedStartDate = labelDataPair[1]; break;
+                //"8. last updated"
+                case "08. last update": formattedUpdateDate = labelDataPair[1]; break;
+                case "09. start quantity": startQuantity = new BigDecimal(labelDataPair[1]); break;
+                case "10. degradation required": degradationRequired = new BigDecimal(labelDataPair[1]); break;
+                case "11. grow temp": growTemp = new BigDecimal(labelDataPair[1]); break;
+                case "12. grow hours": growHours = new BigDecimal(labelDataPair[1]); break;
+                case "13. uv dose": uvDose = new BigDecimal(labelDataPair[1]); break;
+                case "14. current quantity temp": currentQuantityTemp = new BigDecimal(labelDataPair[1]); break;
+                case "15. current quantity uv": currentQuantityUV = new BigDecimal(labelDataPair[1]); break;
+                case "16. current quantity best one": currentQuantityBestOne = new BigDecimal(labelDataPair[1]); break;
+                case "17. current quantity worst one": currentQuantityWorstOne = new BigDecimal(labelDataPair[1]); break;
+                case "18. current quantity mid point": currentQuantityMidPoint = new BigDecimal(labelDataPair[1]); break;
+                case "19. current quantity combined breakdown": currentQuantityCombinedBreakdown = new BigDecimal(labelDataPair[1]); break;
+                case "20. current quantity temp then uv": currentQuantityTempThenUV = new BigDecimal(labelDataPair[1]); break;
+                case "21. current quantity uv then temp": currentQuantityUVThenTemp = new BigDecimal(labelDataPair[1]); break;
+                case "id": projectID = labelDataPair[1]; break;
                 default: break;
             }
         }
@@ -127,44 +134,36 @@ public class Project {
         Map<String, Object> user = new HashMap<>();
 
         //Think I've got to add a .toString to the BigDecimals because I had to with the admin app, worth testing later though
-        user.put("covering", coveringType);
-        user.put("degradation_required", degradationRequired.toString());
+        user.put("01. covering", coveringType);
+        user.put("02. uv fen", uvFen.toString());
+        user.put("03. uv rate",uvRate.toString());
+        user.put("04. pesticide", pesticideType);
+        user.put("05. regression parameter 1", regressionParam1.toString());
+        user.put("06. regression parameter 2", regressionParam2.toString());
         //user.put("latitude", latitude);
         //user.put("longitude", longitude);
-        user.put("pesticide", pesticideType);
-        user.put("start_date", formattedDate);
-
-        //Add a "last updated" date thing. Also, no harm int adding the time, helps to identify the different projects
-
-        //in mg/m2
-        user.put("start_quantity", startQuantity.toString());
-
-        user.put("grow_temp", growTemp.toString());
-
-        //To be updated, running total
-        user.put("grow_hours", growHours.toString());
-        user.put("uv_dose", uvDose.toString());
-
-        //To be updated each time new data is added
-        user.put("current_quantity_uv", currentQuantityUV.toString());
-        user.put("current_quantity_temp", currentQuantityTemp.toString());
-
-        //Guesses as to how to combine the two breakdown rates:
-        user.put("current_quantity_best_one", currentQuantityBestOne.toString());
-        user.put("current_quantity_worst_one", currentQuantityWorstOne.toString());
-        user.put("current_quantity_mid_point", currentQuantityMidPoint.toString());
-        user.put("current_quantity_combined_breakdown", currentQuantityCombinedBreakdown.toString());
-        user.put("current_quantity_uv_then_temp", currentQuantityUVThenTemp.toString());
-        user.put("current_quantity_temp_then_uv", currentQuantityTempThenUV.toString());
-
-        user.put("uv_fen", uvFen.toString());
-        user.put("uv_rate",uvRate.toString());
-
-        user.put("regression parameter 1", regressionParam1.toString());
-        user.put("regression parameter 2", regressionParam2.toString());
-
         //Based only on UV breakdown, not temperature yet
-        //user.put("days_needed", daysNeeded);
+        //user.put("days needed", daysNeeded);
+        user.put("07. start date", formattedStartDate);
+        //"8. last updated" Also, no harm in adding the time, helps to identify the different projects
+        user.put("08. last update", formattedUpdateDate);
+        //in mg/m2
+        user.put("09. start quantity", startQuantity.toString());
+        user.put("10. degradation required", degradationRequired.toString());
+        user.put("11. grow temp", growTemp.toString());
+        //To be updated, running total
+        user.put("12. grow hours", growHours.toString());
+        user.put("13. uv dose", uvDose.toString());
+        //To be updated each time new data is added
+        user.put("14. current quantity temp", currentQuantityTemp.toString());
+        user.put("15. current quantity uv", currentQuantityUV.toString());
+        //Guesses as to how to combine the two breakdown rates:
+        user.put("16. current quantity best one", currentQuantityBestOne.toString());
+        user.put("17. current quantity worst one", currentQuantityWorstOne.toString());
+        user.put("18. current quantity mid point", currentQuantityMidPoint.toString());
+        user.put("19. current quantity combined breakdown", currentQuantityCombinedBreakdown.toString());
+        user.put("20. current quantity temp then uv", currentQuantityTempThenUV.toString());
+        user.put("21. current quantity uv then temp", currentQuantityUVThenTemp.toString());
         return user;
     }
 

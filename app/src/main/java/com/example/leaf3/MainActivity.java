@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private EditText enterDegradation, enterStartQuantity, enterGrowTemp, enterHours, enterUVDose;
     private Button goButton;
     private Button getDataButton;
+    Button signOutButton;
 
     BigDecimal uvFen, uvRate, rParam1, rParam2;
 
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         requestGoogleSignIn();
 
         btnSignIn = findViewById(R.id.btnSignIn);
-        btnSignIn.setOnClickListener(v -> signIn());
+
 
 
         //coveringSpinner.setOnItemSelectedListener(this);
@@ -131,11 +132,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         goButton = findViewById(R.id.goButton);
         Button databaseButton = findViewById(R.id.databaseButton);
 
-        Button signOutButton = findViewById(R.id.signOutButton);
+        signOutButton = findViewById(R.id.signOutButton);
 
         //Ideally, I'll be able to get rid of this.
         getDataButton.setOnClickListener(v-> {
-            if(isNetworkAvailable()){
+            if(username.equals("Backup")){
+                Toast.makeText(MainActivity.this, "Please sign in.", Toast.LENGTH_SHORT).show();
+            }
+            else if(isNetworkAvailable()){
                 try {
                     ExecutorService service = Executors.newSingleThreadExecutor();
                     service.execute(() -> {
@@ -274,7 +278,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         });
 
         goButton.setOnClickListener(v->{
-            if(isNetworkAvailable()) {
+            if(username.equals("Backup")){
+                Toast.makeText(MainActivity.this, "Please sign in.", Toast.LENGTH_SHORT).show();
+            }
+            else if(isNetworkAvailable()) {
                 ExecutorService service = Executors.newSingleThreadExecutor();
                 service.execute(() -> {
                     //onPre
@@ -300,7 +307,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     Toast.makeText(MainActivity.this, "Calculation Finished\nProject saved", Toast.LENGTH_SHORT).show();
                                 } else {Toast.makeText(MainActivity.this, "Degradation must be between 0 and 100%", Toast.LENGTH_SHORT).show();}
                             } else{Toast.makeText(MainActivity.this, "Please press GET DATA", Toast.LENGTH_SHORT).show();}
-                        } catch (Exception e) {Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();}
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
+                        }
                     });
                 });
 
@@ -310,7 +319,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         });
 
         databaseButton.setOnClickListener(v->{
-            if(isNetworkAvailable()) {
+            if(username.equals("Backup")){
+                Toast.makeText(MainActivity.this, "Please sign in.", Toast.LENGTH_SHORT).show();
+            }
+            else if(isNetworkAvailable()) {
                 db.collection(username)
                         .get()
                         .addOnCompleteListener(task -> {
@@ -328,10 +340,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             } else{Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();}
         });
 
+        btnSignIn.setOnClickListener(v -> {
+            if(isNetworkAvailable()) {
+                signIn();
+                signOutButton.setVisibility(View.VISIBLE);
+                btnSignIn.setVisibility(View.GONE);
+            } else {Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();}
+        });
+
         signOutButton.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
             username = "Backup";
+            mGoogleSignInClient.revokeAccess();
             Toast.makeText(MainActivity.this, "Signed out.", Toast.LENGTH_SHORT).show();
+            signOutButton.setVisibility(View.GONE);
+            btnSignIn.setVisibility(View.VISIBLE);
         });
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -343,8 +366,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         super.onStart();
         try {
             FirebaseUser currentUser = mAuth.getCurrentUser();
-            username = currentUser.getDisplayName();
-        } catch(Exception e) {Toast.makeText(MainActivity.this, "Welcome, please sign in to continue", Toast.LENGTH_SHORT).show();}
+            //username = currentUser.getDisplayName();
+            username = currentUser.getEmail();
+            //Toast.makeText(MainActivity.this, "Welcome back "+currentUser.getDisplayName(), Toast.LENGTH_SHORT).show();
+            signOutButton.setVisibility(View.VISIBLE);
+            btnSignIn.setVisibility(View.GONE);
+        } catch(Exception e) {
+            //Toast.makeText(MainActivity.this, "Welcome, please sign in to continue", Toast.LENGTH_SHORT).show();
+            signOutButton.setVisibility(View.GONE);
+            btnSignIn.setVisibility(View.VISIBLE);
+        }
     }
 
     public void openNewActivity(String dataString){
@@ -479,7 +510,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        username = mAuth.getCurrentUser().getDisplayName();
+                        //username = mAuth.getCurrentUser().getDisplayName();
+                        username = mAuth.getCurrentUser().getEmail();
                     }
                 });
     }

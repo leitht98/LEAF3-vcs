@@ -81,6 +81,7 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int position) {
         // Get element from dataset at this position and replace the
         // contents of the view with that element
+        //.split("09. ")[0] to make it shorter? Need to pass the full thing to the activities though.
         if(!localDataSet[position].equals("")) {viewHolder.getTextView().setText(localDataSet[position]);}
     }
 

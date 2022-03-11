@@ -36,7 +36,7 @@
                 android:id="@+id/pesticide_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Pesticide"
+                android:text="@string/pesticide"
                 android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@id/covering_spinner"/>
 
@@ -87,14 +87,14 @@
                 android:id="@+id/enterStartQuantityLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the start concentration of the pesticide (mg/m2):"
+                android:text="@string/enter_the_start_concentration_of_the_pesticide_mg_m2"
                 app:layout_constraintTop_toBottomOf="@+id/pesticide_label"/>
 
             <EditText
                 android:id="@+id/enterStartQuantity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="50"
+                android:text="@string/_50"
                 app:layout_constraintTop_toBottomOf="@+id/enterStartQuantityLabel"/>
 
 
@@ -103,14 +103,14 @@
                 android:id="@+id/enterDegradationLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the percentage you want it to degrade by:"
+                android:text="@string/enter_the_percentage_you_want_it_to_degrade_by"
                 app:layout_constraintTop_toBottomOf="@+id/enterStartQuantity"/>
 
             <EditText
                 android:id="@+id/enterDegradation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="99"
+                android:text="@string/_99"
                 app:layout_constraintTop_toBottomOf="@+id/enterDegradationLabel"/>
 
 
@@ -119,62 +119,62 @@
                 android:id="@+id/enterGrowTempLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the temperature you're growing at in degrees C:"
+                android:text="@string/enter_the_temperature_you_re_growing_at_in_degrees_c"
                 app:layout_constraintTop_toBottomOf="@+id/enterDegradation"/>
 
             <EditText
                 android:id="@+id/enterGrowTemp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="20"
+                android:text="@string/_20"
                 app:layout_constraintTop_toBottomOf="@+id/enterGrowTempLabel"/>
 
             <TextView
                 android:id="@+id/enterHoursLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the number of hours at this temperature:"
+                android:text="@string/enter_the_number_of_hours_at_this_temperature"
                 app:layout_constraintTop_toBottomOf="@+id/enterGrowTemp"/>
 
             <EditText
                 android:id="@+id/enterHours"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="36"
+                android:text="@string/_36"
                 app:layout_constraintTop_toBottomOf="@+id/enterHoursLabel"/>
 
             <TextView
                 android:id="@+id/enterUVDoseLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the given UV dose:"
+                android:text="@string/enter_the_given_uv_dose"
                 app:layout_constraintTop_toBottomOf="@+id/enterHours"/>
 
             <EditText
                 android:id="@+id/enterUVDose"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="350885.8888"
+                android:text="@string/_350885_8888"
                 app:layout_constraintTop_toBottomOf="@+id/enterUVDoseLabel"/>
 
             <Button
                 android:id="@+id/getDataButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Get Data"
+                android:text="@string/get_data"
                 app:layout_constraintTop_toBottomOf="@+id/enterUVDose"/>
             <Button
                 android:id="@+id/goButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Go!"
+                android:text="@string/go"
                 app:layout_constraintTop_toBottomOf="@+id/getDataButton"/>
 
             <Button
                 android:id="@+id/databaseButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Access database"
+                android:text="@string/access_database"
                 app:layout_constraintTop_toBottomOf="@+id/goButton"/>
 
             <com.google.android.gms.common.SignInButton
@@ -187,7 +187,7 @@
                 android:id="@+id/signOutButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sign out"
+                android:text="@string/sign_out"
                 android:backgroundTint="@android:color/holo_red_light"
                 app:layout_constraintTop_toBottomOf="@+id/btnSignIn"/>
 

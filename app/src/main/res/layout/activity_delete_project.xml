@@ -25,21 +25,21 @@
                 android:id="@+id/areYouSure"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Are you sure you want to delete this project?"
+                android:text="@string/are_you_sure_you_want_to_delete_this_project"
                 app:layout_constraintTop_toBottomOf="@+id/project_data"/>
 
             <Button
                 android:id="@+id/noButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="NO"
+                android:text="@string/no"
                 app:layout_constraintBottom_toTopOf="@+id/yesButton"/>
 
             <Button
                 android:id="@+id/yesButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="YES"
+                android:text="@string/yes"
                 android:backgroundTint="@android:color/holo_red_light"
                 app:layout_constraintBottom_toBottomOf="parent"/>
         </LinearLayout>

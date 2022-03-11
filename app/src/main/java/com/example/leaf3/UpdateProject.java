@@ -27,6 +27,9 @@ public class UpdateProject extends AppCompatActivity {
         enterHours = findViewById(R.id.enterHours);
         enterUVDose = findViewById(R.id.enterUVDose);
 
+        enterHours.setOnClickListener(v -> enterHours.getText().clear());
+        enterUVDose.setOnClickListener(v -> enterUVDose.getText().clear());
+
         Intent intent = getIntent();
         String dataString = intent.getStringExtra("data");
         String username = intent.getStringExtra("username");

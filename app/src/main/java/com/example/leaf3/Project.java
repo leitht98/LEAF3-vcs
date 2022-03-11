@@ -2,6 +2,7 @@ package com.example.leaf3;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,7 +50,7 @@ public class Project {
         //Guesses as to how to combine the two breakdown rates:
         currentQuantityBestOne = BigDecimal.valueOf(0).max(testRemainingAfterUV.min(testRemainingAfterTemp));
         currentQuantityWorstOne = BigDecimal.valueOf(0).max(testRemainingAfterUV.max(testRemainingAfterTemp));
-        currentQuantityMidPoint = BigDecimal.valueOf(0).max((testRemainingAfterUV.add(testRemainingAfterTemp)).divide(BigDecimal.valueOf(2)));
+        currentQuantityMidPoint = BigDecimal.valueOf(0).max((testRemainingAfterUV.add(testRemainingAfterTemp)).divide(BigDecimal.valueOf(2),15, RoundingMode.HALF_UP));
         currentQuantityCombinedBreakdown = BigDecimal.valueOf(0).max(testRemainingAfterUV.subtract(enteredStartQuantity.subtract(testRemainingAfterTemp)));
         currentQuantityUVThenTemp = BigDecimal.valueOf(0).max(remainingPesticideTemp(testRemainingAfterUV, enteredHours));
         currentQuantityTempThenUV = BigDecimal.valueOf(0).max(remainingPesticideUV(testRemainingAfterTemp, enteredUVDose));
@@ -82,7 +83,7 @@ public class Project {
         //Guesses as to how to combine the two breakdown rates:
         currentQuantityBestOne = BigDecimal.valueOf(0).max(remainingPesticideUV(currentQuantityBestOne,enteredUVDose).min(remainingPesticideTemp(currentQuantityBestOne,enteredHours)));
         currentQuantityWorstOne = BigDecimal.valueOf(0).max(remainingPesticideUV(currentQuantityWorstOne,enteredUVDose).min(remainingPesticideTemp(currentQuantityWorstOne,enteredHours)));
-        currentQuantityMidPoint = BigDecimal.valueOf(0).max((remainingPesticideUV(currentQuantityMidPoint,enteredUVDose).add(remainingPesticideTemp(currentQuantityMidPoint,enteredHours))).divide(BigDecimal.valueOf(2)));
+        currentQuantityMidPoint = BigDecimal.valueOf(0).max((remainingPesticideUV(currentQuantityMidPoint,enteredUVDose).add(remainingPesticideTemp(currentQuantityMidPoint,enteredHours))).divide(BigDecimal.valueOf(2),15, RoundingMode.HALF_UP));
         currentQuantityCombinedBreakdown = BigDecimal.valueOf(0).max(remainingPesticideUV(currentQuantityCombinedBreakdown,enteredUVDose).subtract(currentQuantityCombinedBreakdown.subtract(remainingPesticideTemp(currentQuantityCombinedBreakdown,enteredHours))));
         currentQuantityUVThenTemp = BigDecimal.valueOf(0).max(remainingPesticideTemp(remainingPesticideUV(currentQuantityUVThenTemp,enteredUVDose),enteredHours));
         currentQuantityTempThenUV = BigDecimal.valueOf(0).max(remainingPesticideUV(remainingPesticideTemp(currentQuantityTempThenUV,enteredHours),enteredUVDose));
@@ -168,7 +169,7 @@ public class Project {
     }
 
     private BigDecimal remainingPesticideTemp(BigDecimal startConcentration, BigDecimal hours){
-        return startConcentration.subtract(hours.multiply(volatilisationRate().divide(BigDecimal.valueOf(1000))));
+        return startConcentration.subtract(hours.multiply(volatilisationRate().divide(BigDecimal.valueOf(1000),15, RoundingMode.HALF_UP)));
     }
 
     private BigDecimal remainingPesticideUV(BigDecimal startConcentration, BigDecimal givenUVDose){

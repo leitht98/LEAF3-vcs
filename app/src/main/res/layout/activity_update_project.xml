@@ -27,42 +27,42 @@
                 android:id="@+id/enterHoursLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the number of hours:"
+                android:text="@string/enter_the_number_of_hours"
                 app:layout_constraintTop_toBottomOf="@+id/project_data"/>
 
             <EditText
                 android:id="@+id/enterHours"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1"
+                android:text="@string/_1"
                 app:layout_constraintTop_toBottomOf="@+id/enterHoursLabel"/>
 
             <TextView
                 android:id="@+id/enterUVDoseLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter the given UV dose:"
+                android:text="@string/enter_the_given_uv_dose"
                 app:layout_constraintTop_toBottomOf="@+id/enterHours"/>
 
             <EditText
                 android:id="@+id/enterUVDose"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="350885.8888"
+                android:text="@string/_350885_8888"
                 app:layout_constraintTop_toBottomOf="@+id/enterUVDoseLabel"/>
 
             <Button
                 android:id="@+id/updateButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Update"
+                android:text="@string/update"
                 app:layout_constraintTop_toBottomOf="@+id/enterUVDose"/>
 
             <Button
                 android:id="@+id/backButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Back"
+                android:text="@string/back"
                 app:layout_constraintBottom_toBottomOf="parent"/>
 
         </LinearLayout>

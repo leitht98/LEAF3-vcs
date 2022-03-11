@@ -3,22 +3,31 @@
 
     <string name="covering_no_selection">Select a covering</string>
     <string name="covering">Covering</string>
-
-    <!--
-    <string-array name="covering_array">
-        <item>Transparent</item>
-        <item>Opaque</item>
-        <item>Standard</item>
-        <item>No film</item>
-    </string-array>
-
-
-    <string-array name="pesticides_array">
-        <item>Fenitrothion</item>
-    </string-array>
-
-    <string name="result">Result</string>
-    -->
+    <string name="projects">Projects:</string>
+    <string name="back">Back</string>
+    <string name="are_you_sure_you_want_to_delete_this_project">Are you sure you want to delete this project?</string>
+    <string name="no">NO</string>
+    <string name="yes">YES</string>
+    <string name="pesticide">Pesticide</string>
+    <string name="enter_the_start_concentration_of_the_pesticide_mg_m2">Enter the start concentration of the pesticide (mg/m2):</string>
+    <string name="_50">50</string>
+    <string name="enter_the_percentage_you_want_it_to_degrade_by">Enter the percentage you want it to degrade by:</string>
+    <string name="_99">99</string>
+    <string name="enter_the_temperature_you_re_growing_at_in_degrees_c">Enter the temperature you\'re growing at in degrees C:</string>
+    <string name="_20">20</string>
+    <string name="enter_the_number_of_hours_at_this_temperature">Enter the number of hours at this temperature:</string>
+    <string name="_36">36</string>
+    <string name="enter_the_given_uv_dose">Enter the given UV dose:</string>
+    <string name="_350885_8888">350885.8888</string>
+    <string name="get_data">Get Data</string>
+    <string name="go">Go!</string>
+    <string name="access_database">Access database</string>
+    <string name="sign_out">Sign out</string>
+    <string name="update">Update</string>
+    <string name="_1">1</string>
+    <string name="enter_the_number_of_hours">Enter the number of hours:</string>
+    <string name="press_again">Press Again</string>
+    <string name="calculating">Calculating…</string>
 
 
 </resources>

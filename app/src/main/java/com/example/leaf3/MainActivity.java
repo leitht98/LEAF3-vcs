@@ -128,6 +128,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         enterGrowTemp = findViewById(R.id.enterGrowTemp);
         enterHours = findViewById(R.id.enterHours);
         enterUVDose = findViewById(R.id.enterUVDose);
+
+        enterDegradation.setOnClickListener(v -> enterDegradation.getText().clear());
+        enterStartQuantity.setOnClickListener(v -> enterStartQuantity.getText().clear());
+        enterGrowTemp.setOnClickListener(v -> enterGrowTemp.getText().clear());
+        enterHours.setOnClickListener(v -> enterHours.getText().clear());
+        enterUVDose.setOnClickListener(v -> enterUVDose.getText().clear());
+
         getDataButton = findViewById(R.id.getDataButton);
         goButton = findViewById(R.id.goButton);
         Button databaseButton = findViewById(R.id.databaseButton);
@@ -256,9 +263,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                 //If you press load a second time it works! I just need to get it to bloody wait and I'm there
                                 for (String i : tempCoveringSpinnerArray) {coveringNamesString += i;}
                                 if (coveringNamesString.equals("")) {
-                                    getDataButton.setText("Press Again");
+                                    getDataButton.setText(R.string.press_again);
                                 } else {
-                                    getDataButton.setText("GET DATA");
+                                    getDataButton.setText(R.string.get_data);
 
                                     coveringSpinnerArray = tempCoveringSpinnerArray;
                                     ArrayAdapter<String> coveringStringAdapterTemp = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
@@ -291,11 +298,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         } catch (Exception e) {Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();}
                     });
                     //background
-                    goButton.setText("Calculating...");
+                    goButton.setText(R.string.calculating);
 
                     //onPost
                     runOnUiThread(() -> {
-                        goButton.setText("GO!");
+                        goButton.setText(R.string.go);
                         try {
                             if(!(coveringType==null)) {
                                 if (Float.parseFloat(enterDegradation.getText().toString()) < 100 && Float.parseFloat(enterDegradation.getText().toString()) >= 0) {

@@ -1,6 +1,7 @@
 package com.example.leaf3;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -15,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -22,8 +25,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,19 +40,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
-    public static final int RC_SIGN_IN = 123;
     //Hardcoded username to store projects in individual databases, eventually this will be entered by the user
+    //It is now the user's gmail
     String username = "Backup";
     //To store the project location
     Location currentLocation = new Location("");
     //protected String latitude,longitude;
 
     //private TextView resultOutput;
-    private FusedLocationProviderClient mFusedLocationClient;
+    //private FusedLocationProviderClient mFusedLocationClient;
 
     //private TextView latitudeTextView, longitudeTextView;
     //int PERMISSION_ID = 44;
@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     SignInButton btnSignIn;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
+
+    ActivityResultLauncher<Intent> activityResultLauncher;
 
 
     @Override
@@ -172,8 +174,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                             coveringsObjectArray.clear();
 
                                             String dataStringTrim = dataString.substring(1, dataString.length() - 1);
-                                            System.out.println("Raw and trimmed: " + dataStringTrim);
-                                            String[] coveringsData = dataStringTrim.split("\\}\\{");
+                                            //System.out.println("Raw and trimmed: " + dataStringTrim);
+                                            String[] coveringsData = dataStringTrim.split(getString(R.string.itemSplit));
                                             for (String i : coveringsData) {
                                                 System.out.println("individual data: " + i);
                                                 String[] coveringValues = i.split(",");
@@ -217,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
                                             String dataStringTrim = dataString.substring(1, dataString.length() - 1);
                                             System.out.println("Raw and trimmed: " + dataStringTrim);
-                                            String[] coveringsData = dataStringTrim.split("\\}\\{");
+                                            String[] coveringsData = dataStringTrim.split(getString(R.string.itemSplit));
                                             for (String i : coveringsData) {
                                                 System.out.println("individual data: " + i);
                                                 String[] coveringValues = i.split(",");
@@ -246,23 +248,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
                             //This shuts it down too fast
                             service.shutdown();
-                            //The if just breaks it. Why do I need this to allow the other section to run?
-                            //if(tempCoveringSpinnerArray.size()==5) {
-                            //service.shutdown();
-                            //}
                         } else {System.out.println("Fail at check 2");}
 
                         //onPost
                         runOnUiThread(() -> {
                             //
                             try {
-                                service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                                System.out.println("This is post");
-                                System.out.println(">>>" + tempCoveringSpinnerArray.size());
-                                String coveringNamesString = "";
+                                StringBuilder coveringNamesString = new StringBuilder();
                                 //If you press load a second time it works! I just need to get it to bloody wait and I'm there
-                                for (String i : tempCoveringSpinnerArray) {coveringNamesString += i;}
-                                if (coveringNamesString.equals("")) {
+                                for (String i : tempCoveringSpinnerArray) {
+                                    coveringNamesString.append(i);}
+                                if (coveringNamesString.toString().equals("")) {
                                     getDataButton.setText(R.string.press_again);
                                 } else {
                                     getDataButton.setText(R.string.get_data);
@@ -277,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     pesticideStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
                                     pesticideSpinner.setAdapter(pesticideStringAdapterTemp);
                                 }
-                            } catch (InterruptedException e) {System.out.println("Fail at check 3");}
+                            } catch (Exception e) {System.out.println("Fail at check 3");}
                         });
                     });
                 } catch (Exception e) {Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();}
@@ -313,14 +309,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     project.saveToDatabase(new BigDecimal(enterStartQuantity.getText().toString()), new BigDecimal(enterUVDose.getText().toString()), new BigDecimal(enterHours.getText().toString()), new BigDecimal(enterGrowTemp.getText().toString()), new BigDecimal(enterDegradation.getText().toString()), coveringType, pesticideType, uvFen, uvRate, rParam1, rParam2, username);
                                     Toast.makeText(MainActivity.this, "Calculation Finished\nProject saved", Toast.LENGTH_SHORT).show();
                                 } else {Toast.makeText(MainActivity.this, "Degradation must be between 0 and 100%", Toast.LENGTH_SHORT).show();}
-                            } else{Toast.makeText(MainActivity.this, "Please press GET DATA", Toast.LENGTH_SHORT).show();}
+                            } else{Toast.makeText(MainActivity.this, "Please load Coverings and Pesticides", Toast.LENGTH_SHORT).show();}
                         } catch (Exception e) {
                             Toast.makeText(MainActivity.this, "Values must be numbers", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
-
-
             }
             else {Toast.makeText(MainActivity.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();}
         });
@@ -364,22 +358,36 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             btnSignIn.setVisibility(View.VISIBLE);
         });
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        activityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request codes
+                        Intent data = result.getData();
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                        try {
+                            // Google Sign In was successful, authenticate with Firebase
+                            GoogleSignInAccount account = task.getResult(ApiException.class);
+                            firebaseAuthWithGoogle(account.getIdToken());
+                            Toast.makeText(MainActivity.this,"Sign in successful.", Toast.LENGTH_SHORT).show();
+                        } catch (ApiException e) {Toast.makeText(MainActivity.this,"Sign in failed.", Toast.LENGTH_SHORT).show();}
+                    }
+                });
         //resultOutput = (TextView) findViewById(R.id.result_output);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        try {
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            //username = currentUser.getDisplayName();
+        //Toast.makeText(MainActivity.this, "Welcome back "+currentUser.getDisplayName(), Toast.LENGTH_SHORT).show();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
             username = currentUser.getEmail();
-            //Toast.makeText(MainActivity.this, "Welcome back "+currentUser.getDisplayName(), Toast.LENGTH_SHORT).show();
             signOutButton.setVisibility(View.VISIBLE);
             btnSignIn.setVisibility(View.GONE);
-        } catch(Exception e) {
-            //Toast.makeText(MainActivity.this, "Welcome, please sign in to continue", Toast.LENGTH_SHORT).show();
+        } else {
             signOutButton.setVisibility(View.GONE);
             btnSignIn.setVisibility(View.VISIBLE);
         }
@@ -402,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     class getCoveringsAsFuture implements Callable<ArrayList<String>>{
 
         @Override
-        public ArrayList<String> call() throws Exception {
+        public ArrayList<String> call(){
             ArrayList<String> coveringSpinnerArrayUsingFuturesTemp = new ArrayList<>();
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -417,7 +425,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                     dataString.append(document.getData());
                                 }
                                 String dataStringTrim = dataString.substring(1,dataString.length()-1);
-                                String[] coveringsData = dataStringTrim.split("\\}\\{");
+                                String[] coveringsData = dataStringTrim.split(getString(R.string.itemSplit));
                                 for(String i : coveringsData){
                                     String[] coveringValues = i.split(",");
                                     BigDecimal rate = new BigDecimal(coveringValues[0].split("=")[1]);
@@ -492,23 +500,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account.getIdToken());
-            } catch (ApiException e) {
-                //Toast.makeText(MainActivity.this,"failure!!!!", Toast.LENGTH_SHORT).show();
-            }
-        }
+        activityResultLauncher.launch(signInIntent);
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
@@ -517,8 +509,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        //username = mAuth.getCurrentUser().getDisplayName();
-                        username = mAuth.getCurrentUser().getEmail();
+                        if (user != null) {username = user.getEmail();}
                     }
                 });
     }

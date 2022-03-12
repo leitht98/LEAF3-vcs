@@ -19,15 +19,16 @@
     <string name="_36">36</string>
     <string name="enter_the_given_uv_dose">Enter the given UV dose:</string>
     <string name="_350885_8888">350885.8888</string>
-    <string name="get_data">Get Data</string>
-    <string name="go">Go!</string>
-    <string name="access_database">Access database</string>
+    <string name="get_data">Load Coverings &amp; Pesticides</string>
+    <string name="go">Save Project</string>
+    <string name="access_database">View My Projects</string>
     <string name="sign_out">Sign out</string>
     <string name="update">Update</string>
     <string name="_1">1</string>
     <string name="enter_the_number_of_hours">Enter the number of hours:</string>
     <string name="press_again">Press Again</string>
     <string name="calculating">Calculating…</string>
-
+    <string name="delete">Delete</string>
+    <string name="itemSplit">\\}\\{</string>
 
 </resources>

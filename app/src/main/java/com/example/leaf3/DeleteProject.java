@@ -49,11 +49,11 @@ public class DeleteProject extends AppCompatActivity {
                 db.collection(username).
                         document(documentID)
                         .delete().addOnSuccessListener(aVoid -> {
-                    Toast.makeText(DeleteProject.this, "Project has been deleted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DeleteProject.this, "Project has been deleted.", Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(DeleteProject.this, MainActivity.class);
                     i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     DeleteProject.this.startActivity(i);
-                }).addOnFailureListener(e -> Toast.makeText(DeleteProject.this, "Fail to delete the project", Toast.LENGTH_SHORT).show());
+                }).addOnFailureListener(e -> Toast.makeText(DeleteProject.this, "Failed to delete the project.", Toast.LENGTH_SHORT).show());
             } else{Toast.makeText(DeleteProject.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();}
         });
     }

@@ -53,7 +53,7 @@ public class UpdateProject extends AppCompatActivity {
                     Intent i = new Intent(this, MainActivity.class);
                     i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     this.startActivity(i);
-                    Toast.makeText(UpdateProject.this, "Project has been updated.\nReturn to database to view.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UpdateProject.this, "Project has been updated.", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {Toast.makeText(UpdateProject.this, "Values must be numbers", Toast.LENGTH_SHORT).show();}
             } else{Toast.makeText(UpdateProject.this, "Please connect to the internet.", Toast.LENGTH_SHORT).show();}
         });

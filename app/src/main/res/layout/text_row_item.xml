@@ -1,42 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:ignore="UselessParent">
+        <TextView
+            android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                />
+            />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:gravity="right"
-                android:layout_marginEnd="@dimen/_5sdp"
-                android:text="Delete"
-                android:backgroundTint="@android:color/holo_red_light"
-                android:id="@+id/deleteButton"
-                app:layout_constraintBottom_toBottomOf="@+id/textView"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:gravity="end"
+            android:layout_marginEnd="@dimen/_5sdp"
+            android:text="@string/delete"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:id="@+id/deleteButton"
+            app:layout_constraintBottom_toBottomOf="@+id/textView"/>
 
-            <Button
-                android:id="@+id/projectButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:gravity="right"
-                android:layout_marginEnd="@dimen/_5sdp"
-                android:text="Update"
-                app:layout_constraintBottom_toTopOf="@+id/projectButton"/>
-        </LinearLayout>
-    </ScrollView></FrameLayout>
+        <Button
+            android:id="@+id/projectButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:gravity="end"
+            android:layout_marginEnd="@dimen/_5sdp"
+            android:text="@string/update"
+            app:layout_constraintBottom_toTopOf="@+id/projectButton"/>
+    </LinearLayout>
+</FrameLayout>

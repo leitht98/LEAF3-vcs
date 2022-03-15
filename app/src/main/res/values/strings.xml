@@ -10,25 +10,27 @@
     <string name="yes">YES</string>
     <string name="pesticide">Pesticide</string>
     <string name="enter_the_start_concentration_of_the_pesticide_mg_m2">Enter the start concentration of the pesticide (mg/m2):</string>
-    <string name="_50">50</string>
+    <string name="start_concentration">50</string>
     <string name="enter_the_percentage_you_want_it_to_degrade_by">Enter the percentage you want it to degrade by:</string>
-    <string name="_99">99</string>
+    <string name="percent_to_degrade_by">99</string>
     <string name="enter_the_temperature_you_re_growing_at_in_degrees_c">Enter the temperature you\'re growing at in degrees C:</string>
-    <string name="_20">20</string>
+    <string name="grow_temperature">30</string>
     <string name="enter_the_number_of_hours_at_this_temperature">Enter the number of hours at this temperature:</string>
-    <string name="_36">36</string>
+    <string name="grow_hours">36</string>
     <string name="enter_the_given_uv_dose">Enter the given UV dose:</string>
-    <string name="_350885_8888">350885.8888</string>
+    <string name="given_uv_dose">0</string>
     <string name="get_data">Load Coverings &amp; Pesticides</string>
     <string name="go">Save Project</string>
     <string name="access_database">View My Projects</string>
     <string name="sign_out">Sign out</string>
     <string name="update">Update</string>
-    <string name="_1">1</string>
+    <string name="new_grow_hours">1</string>
     <string name="enter_the_number_of_hours">Enter the number of hours:</string>
     <string name="press_again">Press Again</string>
     <string name="calculating">Calculating…</string>
     <string name="delete">Delete</string>
     <string name="itemSplit">\\}\\{</string>
+    <string name="coverings_database_collection">coverings</string>
+    <string name="pesticides_database_collection">pesticides</string>
 
 </resources>

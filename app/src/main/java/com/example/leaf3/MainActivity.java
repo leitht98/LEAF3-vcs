@@ -35,11 +35,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, AdapterView.OnItemSelectedListener {
 
@@ -96,33 +93,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         btnSignIn = findViewById(R.id.btnSignIn);
 
+        coveringSpinnerArray = new ArrayList<>();
+        ArrayAdapter<String> coveringStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
+        coveringStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        coveringSpinner.setAdapter(coveringStringAdapter);
+        coveringSpinner.setOnItemSelectedListener(MainActivity.this);
 
-
-        //coveringSpinner.setOnItemSelectedListener(this);
-        ExecutorService coveringsService = Executors.newSingleThreadExecutor();
-        Future<ArrayList<String>> future = coveringsService.submit(new getCoveringsAsFuture());
-
-        //Stuff to do in background - Fucking nothing!
-
-        try {
-            //Okay, this is literally exactly the same as it is when you click the button, why doesn't it work here??
-            coveringSpinnerArray = future.get();
-            ArrayAdapter<String> coveringStringAdapterTemp = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, coveringSpinnerArray);
-            coveringStringAdapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_item);
-            coveringSpinner.setAdapter(coveringStringAdapterTemp);
-            //Nope. Once again. Fucking hell!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            coveringSpinner.setOnItemSelectedListener(MainActivity.this);
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         pesticideSpinnerArray = new ArrayList<>();
         ArrayAdapter<String> pesticideStringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, pesticideSpinnerArray);
         pesticideStringAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         pesticideSpinner.setAdapter(pesticideStringAdapter);
         pesticideSpinner.setOnItemSelectedListener(this);
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         //Adding all the other items
         enterDegradation = findViewById(R.id.enterDegradation);
@@ -161,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                         //
 
                         if (isNetworkAvailable()) {
-                            db.collection("coverings")
+                            db.collection(getString(R.string.coverings_database_collection))
                                     .get()
                                     .addOnCompleteListener(task -> {
                                         StringBuilder dataString = new StringBuilder();
@@ -201,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                                         } else {System.out.println("Fail at check 1");}
                                     });
 
-                            db.collection("pesticides")
+                            db.collection(getString(R.string.pesticides_database_collection))
                                     .get()
                                     .addOnCompleteListener(task -> {
                                         StringBuilder dataString = new StringBuilder();
@@ -406,50 +387,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {currentLocation = location;}
-
-    class getCoveringsAsFuture implements Callable<ArrayList<String>>{
-
-        @Override
-        public ArrayList<String> call(){
-            ArrayList<String> coveringSpinnerArrayUsingFuturesTemp = new ArrayList<>();
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-            if(connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED ||
-                    connectivityManager.getActiveNetworkInfo().getState() == NetworkInfo.State.CONNECTED) {
-                db.collection("coverings")
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            StringBuilder dataString = new StringBuilder();
-                            if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                    dataString.append(document.getData());
-                                }
-                                String dataStringTrim = dataString.substring(1,dataString.length()-1);
-                                String[] coveringsData = dataStringTrim.split(getString(R.string.itemSplit));
-                                for(String i : coveringsData){
-                                    String[] coveringValues = i.split(",");
-                                    BigDecimal rate = new BigDecimal(coveringValues[0].split("=")[1]);
-                                    BigDecimal fen = new BigDecimal(coveringValues[1].split("=")[1]);
-                                    String name = coveringValues[2].split("=")[1];
-                                    boolean newCovering = true;
-                                    for (String j: coveringSpinnerArrayUsingFuturesTemp){
-                                        if (j.equals(name)) {
-                                            newCovering = false;
-                                            break;
-                                        }
-                                    }
-                                    if(newCovering) {
-                                        coveringSpinnerArrayUsingFuturesTemp.add(name);
-                                        coveringsObjectArray.add(new Covering(name,fen,rate));
-                                    }
-                                }
-                            } else {System.out.println("Fail at check 1");}
-                        });
-            } else{System.out.println("Fail at check 2");}
-            return coveringSpinnerArrayUsingFuturesTemp;
-        }
-    }
-
 
     //I think this will need changing?
     //This is the problem

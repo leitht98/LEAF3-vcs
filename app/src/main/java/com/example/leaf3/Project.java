@@ -21,6 +21,11 @@ public class Project {
     //int daysNeeded;
     FirebaseFirestore db;
 
+    //Values:
+    BigDecimal zeroInKelvin = BigDecimal.valueOf(273.15);
+    BigDecimal mmHgToPaScaleFactor = BigDecimal.valueOf(133.322);
+
+
     public Project() {
         db = FirebaseFirestore.getInstance();
     }
@@ -165,6 +170,8 @@ public class Project {
         user.put("19. current quantity combined breakdown", currentQuantityCombinedBreakdown.toString());
         user.put("20. current quantity temp then uv", currentQuantityTempThenUV.toString());
         user.put("21. current quantity uv then temp", currentQuantityUVThenTemp.toString());
+        //Test of newVolatilisationRate(), it works!
+        System.out.println(">>>>>>>>>>"+newVolatilisationRate(BigDecimal.valueOf(0.00357020501337738),BigDecimal.valueOf(20),BigDecimal.valueOf(277.23)).toString());
         return user;
     }
 
@@ -181,17 +188,33 @@ public class Project {
 
     //This will need changing, pass RPs to the class, don't find them here
     private BigDecimal volatilisationRate(){
-        BigDecimal tempInKelvin = growTemp.add(BigDecimal.valueOf(273.15));
+        BigDecimal tempInKelvin = growTemp.add(zeroInKelvin);
         //I'm not exactly clear why this division broke it, the others seem fine but I'm worried they'll break if I can't figure out this one
         BigDecimal vapourPressureP1 = BigDecimal.valueOf(regressionParam2.doubleValue()/tempInKelvin.doubleValue());
         BigDecimal vapourPressureP2 = regressionParam1.subtract(vapourPressureP1);
         BigDecimal vapourPressure = BigDecimal.valueOf(Math.pow(10,vapourPressureP2.doubleValue()));
-        BigDecimal vapourPressure1mmHg = vapourPressure.multiply(BigDecimal.valueOf(133.322));
+        BigDecimal vapourPressure1mmHg = vapourPressure.multiply(mmHgToPaScaleFactor);
         //Bit janky, maybe try to improve?
         BigDecimal lnVP = BigDecimal.valueOf(log(vapourPressure1mmHg.doubleValue()));
         //Also pretty janky
         return BigDecimal.valueOf(Math.pow(E,BigDecimal.valueOf(11.81).add(BigDecimal.valueOf(0.85956).multiply(lnVP)).doubleValue()));
         //Why are all these values hardcoded?? Are they to do with which pesticide or covering you use? Really need to know what these are.
         //Even if they aren't ones that would change, we should at least name them, that can be the boring task for tomorrow
+        //I think they're constant? Very confusing
+    }
+
+    private BigDecimal newVolatilisationRate(BigDecimal referenceVapourPressure, BigDecimal referenceTemp, BigDecimal molarMass){
+        BigDecimal a = BigDecimal.valueOf(-95000).divide(BigDecimal.valueOf(8.314),15,RoundingMode.HALF_UP);
+        BigDecimal b1 = BigDecimal.valueOf(1).divide(growTemp.add(zeroInKelvin),15,RoundingMode.HALF_UP);
+        BigDecimal b2 = BigDecimal.valueOf(1).divide(referenceTemp.add(zeroInKelvin),15,RoundingMode.HALF_UP);
+        BigDecimal b = b1.subtract(b2);
+        BigDecimal exponent = a.multiply(b);
+        BigDecimal vapourPressureScaler = BigDecimal.valueOf(Math.pow(E,exponent.doubleValue()));
+        //This works.
+        BigDecimal predictedVapourPressure = referenceVapourPressure.multiply(vapourPressureScaler);
+        //1464 seems to be constant across pesticides
+        //This works! Spitting out the same rate as the excel, just need to get confirmation that this is the one to use
+        //Then just get it storing these values instead of RP1 and RP2 and you're set
+        return BigDecimal.valueOf(1464).multiply(predictedVapourPressure).multiply(molarMass);
     }
 }

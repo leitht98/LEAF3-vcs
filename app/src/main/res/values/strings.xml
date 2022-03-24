@@ -2,7 +2,7 @@
     <string name="app_name">LEAF3</string>
 
     <string name="covering_no_selection">Select a covering</string>
-    <string name="covering">Covering</string>
+    <string name="covering">Covering X</string>
     <string name="projects">Projects:</string>
     <string name="back">Back</string>
     <string name="are_you_sure_you_want_to_delete_this_project">Are you sure you want to delete this project?</string>
@@ -10,14 +10,14 @@
     <string name="yes">YES</string>
     <string name="pesticide">Pesticide</string>
     <string name="enter_the_start_concentration_of_the_pesticide_mg_m2">Enter the start concentration of the pesticide (mg/m2):</string>
-    <string name="start_concentration">50</string>
-    <string name="enter_the_percentage_you_want_it_to_degrade_by">Enter the percentage you want it to degrade by:</string>
+    <string name="start_concentration">40</string>
+    <string name="enter_the_percentage_you_want_it_to_degrade_by">Enter the percentage you want it to degrade by:X</string>
     <string name="percent_to_degrade_by">99</string>
     <string name="enter_the_temperature_you_re_growing_at_in_degrees_c">Enter the temperature you\'re growing at in degrees C:</string>
     <string name="grow_temperature">30</string>
     <string name="enter_the_number_of_hours_at_this_temperature">Enter the number of hours at this temperature:</string>
-    <string name="grow_hours">36</string>
-    <string name="enter_the_given_uv_dose">Enter the given UV dose:</string>
+    <string name="default_grow_hours">24</string>
+    <string name="enter_the_given_uv_dose">Enter the given UV dose:X</string>
     <string name="given_uv_dose">0</string>
     <string name="get_data">Load Coverings &amp; Pesticides</string>
     <string name="go">Save Project</string>
